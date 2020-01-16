@@ -26,35 +26,17 @@
 
 int prints(char *s)
 {
-     int i=0;
-/*    for(i=0; i < strlen(s); i++)
-    {
-        extern _putc(s[i]);
-    } */
-/*     while(s[i] != 0)
-    {
-        extern _putc(s[i]);
-    } */
-    extern _putc(s[i]);
+    extern _putc(s);
 }
 
 int gets(char *s)
 {
-    int i=0;
-/*     for(i=0; i < strlen(s); i++)
-    {
-        extern _getc(s[i]);
-    } */
-/*     while(s[i] != 0)
-    {
-        extern _getc(s[i]);
-    } */
-    extern _getc(s[i]);
+    extern _getc(s);
 }
 
 char ans[64];
 
-main()
+_main()
 {
     while (1)
     {
