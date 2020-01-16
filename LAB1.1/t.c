@@ -21,33 +21,54 @@
 **              gcc -m32 flag is required                                     **
 **                                                                            **
 *******************************************************************************/
-#include "bs.s"
+//#include <stdio.h>
+//#include <string.h>
 
 int prints(char *s)
 {
-// write YOUR code
+     int i=0;
+/*    for(i=0; i < strlen(s); i++)
+    {
+        extern _putc(s[i]);
+    } */
+/*     while(s[i] != 0)
+    {
+        extern _putc(s[i]);
+    } */
+    extern _putc(s[i]);
 }
 
 int gets(char *s)
 {
-  _while(1){
-    
-  }
+    int i=0;
+/*     for(i=0; i < strlen(s); i++)
+    {
+        extern _getc(s[i]);
+    } */
+/*     while(s[i] != 0)
+    {
+        extern _getc(s[i]);
+    } */
+    extern _getc(s[i]);
 }
 
 char ans[64];
 
 main()
 {
-  while(1){
-    prints("What's your name? ");
-    gets(ans);  prints("\n\r");
+    while (1)
+    {
+        prints("What's your name? ");
+        gets(ans);
+        prints("\n\r");
 
-    if (ans[0]==0){
-      prints("return to assembly and hang\n\r");
-      return;
+        if (ans[0] == 0)
+        {
+            prints("return to assembly and hang\n\r");
+            return;
+        }
+        prints("Welcome ");
+        prints(ans);
+        prints("\n\r");
     }
-    prints("Welcome "); prints(ans); prints("\n\r");
-  }
 }
-  
