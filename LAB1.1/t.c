@@ -1,4 +1,4 @@
-/*******************************************************************************
+/********************************  t.c file  ***********************************
 **         CptS 460 - Operating Systems and Computer Architecture             **
 **                                 LAB #1                                     **
 **                              Boot Program                                  **
@@ -21,9 +21,33 @@
 **              gcc -m32 flag is required                                     **
 **                                                                            **
 *******************************************************************************/
+#include "bs.s"
 
-int main(int argc, char const *argv[])
+int prints(char *s)
 {
-    printf("I COMPILED!!\n");
-    return 0;
+// write YOUR code
 }
+
+int gets(char *s)
+{
+  _while(1){
+    
+  }
+}
+
+char ans[64];
+
+main()
+{
+  while(1){
+    prints("What's your name? ");
+    gets(ans);  prints("\n\r");
+
+    if (ans[0]==0){
+      prints("return to assembly and hang\n\r");
+      return;
+    }
+    prints("Welcome "); prints(ans); prints("\n\r");
+  }
+}
+  
