@@ -21,8 +21,6 @@
 **              gcc -m32 flag is required                                     **
 **                                                                            **
 *******************************************************************************/
-#include <stdio.h>
-//#include <string.h>
 
 int prints(char *s)
 {
@@ -35,7 +33,12 @@ int prints(char *s)
     {
         extern _putc(s[i]);
     } */
-    extern _putc(s);
+    //extern _putc(s);
+
+    while(*s){
+        putc(*s);
+        s++;
+    }
 }
 
 int gets(char *s)
@@ -49,7 +52,8 @@ int gets(char *s)
     {
         extern _getc(s[i]);
     } */
-    extern _getc(s);
+    extern getc(s);
+    //s* = getc();
 }
 
 char ans[64];
