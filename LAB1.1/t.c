@@ -22,48 +22,14 @@
 **                                                                            **
 *******************************************************************************/
 
-int prints(char *s)
-{
-     int i=0;
-/*    for(i=0; i < strlen(s); i++)
-    {
-        extern _putc(s[i]);
-    } */
-/*     while(s[i] != 0)
-    {
-        extern _putc(s[i]);
-    } */
-    //extern _putc(s);
-
-    while(*s){
-        putc(*s);
-        s++;
-    }
-}
-
-int gets(char *s)
-{
-    int i=0;
-/*     for(i=0; i < strlen(s); i++)
-    {
-        extern _getc(s[i]);
-    } */
-/*     while(s[i] != 0)
-    {
-        extern _getc(s[i]);
-    } */
-    extern getc(s);
-    //s* = getc();
-}
-
-char ans[64];
+char ans[64] = { 0 };
 
 main()
 {
     while (1)
     {
-        prints("TEST!\n");
         prints("What's your name? ");
+        *ans = *ans ^ *ans;
         gets(ans);
         prints("\n\r");
 
@@ -76,4 +42,27 @@ main()
         prints(ans);
         prints("\n\r");
     }
+}
+
+int prints(char *s)
+{
+    while(*s){
+        putc(*s);
+        s++;
+    }
+    
+    return 1;
+}
+
+int gets(char *s)
+{
+    /* While temp does not equal '\r'*/
+    while((*s = getc()) != 0x0D){
+        putc(*s);
+        s++;
+    }
+    s++;
+    *s = 0;
+
+    return 1;
 }
