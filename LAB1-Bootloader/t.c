@@ -95,15 +95,18 @@ u16 search(INODE *ip, char *fname)
             //strncpy(temp, dp->name, dp->name_len);
             //temp[dp->name_len] = 0; //add null char to the end off the dp->name
             dp->name[dp->name_len] = 0;
+            prints(dp->name);
+            putc(' ');
+            //prints("\n\r");
 
             //TODO: strcmp to see if the given name exists
             //if (strcmp(fname, temp) == 0)
             if (strcmp(fname, dp->name) == 0)
             {
                 //prints("found ino for ");
-                prints(fname);
-                putc('/');
-                //prints("\n\r");
+                //prints(fname);
+                //putc('/');
+                prints("\n\r");
                 return (u16)dp->inode;
             }
             dp = (char *)dp + dp->rec_len;
@@ -161,16 +164,18 @@ main()
 
 
     //! 3. Code to get to the inode for the Kernel
-    prints("MB Booter Data: /");  
+    prints("MB Booter /boot/mtx:");
+    prints("\n\r");
     //print_root(ip);  //Print root directory
     ino = search(ip, "boot") - 1; //Searching for "boot" in root and get it's inode #
+    //prints("\n\r");
     getblk(iblk+(ino/8), buf2);
     ip = (INODE *)buf2 + (ino % 8); // ip points to boot's inode
 
     ino = search(ip, "mtx") -1; //Searching for "mtx" in boot directory and get it's inode #
     getblk(iblk+(ino/8), buf2);
     ip = (INODE *)buf2 + (ino % 8); //ip points to mtx's inode
-    prints("\n\r");
+    //prints("\n\r");
     
 /*     prints("Boot ino=");
     putc(ino + '0'); //Prints out '=' for the ino #...why?
@@ -180,20 +185,25 @@ main()
 
     if ((u16)ip->i_block[12])
     {
-        //prints("i_blk[12]");
         getblk((u16)ip->i_block[12], buf1);
     }
+
     
-    //! Start loading MTX Kernel loading segment at memory address 0x1000
+    //! 4. Set the memory address to 0x1000 to start loading the MTX Kernel
     setes(0x1000);                      //! ES = 0x1000 => BIOS loads disk block to (ES, buf)
 
+    
+    //! 5. Start MTX Kernel loading segment
+    //* Load first 12 blocks
     for(i = 0; i < 12; i++)
     {
         getblk((u16)ip->i_block[i], 0); //! buf = 0 => memory address = (ES, 0)
         inces();                        //! inc ES by 1KB/16 = 0x40 
         putc('*');
     }
+    prints("\n\r");
 
+    //* Load indirect blocks if any
     if ((u16)ip->i_block[12])
     {
         up = (u32 *)buf1;
@@ -206,7 +216,8 @@ main()
             up++;
         }
     }
+    prints("\n\rFIN");
 
-    prints("go?");
+    //prints("FIN");
     getc();
 }
