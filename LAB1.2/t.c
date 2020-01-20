@@ -53,7 +53,7 @@ int prints(char *s)
         s++;
     }
     
-    return 1;
+    //return 1; Save some bytes
 }
 
 
@@ -67,7 +67,7 @@ int gets(char *s)
     s++;
     *s = 0;
 
-    return 1;
+    //return 1; Save some bytes
 }
 
 
@@ -80,35 +80,9 @@ u16 getblk(u16 blk, char *buf)
 
 u16 search(INODE *ip, char *fname)
 {
-    //int i=0;
-
     //prints("in search func");
 
-    //print_root
     for(i=0; i < 12; i++)
-    {
-        if ((u16)ip->i_block[i] == 0)
-        {
-            break;
-        }
-        getblk((u16)ip->i_block[i], buf2);
-        dp = (DIR *)buf2;
-
-        // BLK = Block Size = 1024
-        while((char *)dp < buf2 + BLK)
-        {
-            //strncpy(temp, dp->name, dp->name_len);
-            //temp[dp->name_len] = 0; //add null char to the end off the dp->name
-            dp->name[dp->name_len] = 0;
-
-            prints(dp->name);
-            prints("\n\r");
-
-            dp = (char *)dp + dp->rec_len;
-        }
-    }
-
-/*     for(i=0; i < 12; i++)
     {
         if ((u16)ip->i_block[i] == 0)
         {
@@ -130,20 +104,18 @@ u16 search(INODE *ip, char *fname)
             {
                 prints("found ino for ");
                 prints(fname);
+                prints("\n\r");
                 return (u16)dp->inode;
             }
             dp = (char *)dp + dp->rec_len;
         }
-    } */
-    //printf("**inode %s, not found in data blocks\n\n", fname);
+    }
+    //prints("**inode %s, not found in data blocks\n\n", fname);
     return 0;
 }
 
-/* u16 print_root(INODE *ip)
+/* void print_root(INODE *ip)
 {
-    int i=0;
-
-    //prints("in search func");
     for(i=0; i < 12; i++)
     {
         if ((u16)ip->i_block[i] == 0)
@@ -166,6 +138,7 @@ u16 search(INODE *ip, char *fname)
             dp = (char *)dp + dp->rec_len;
         }
     }
+    //return 1; //T This 'return 1' takes additional 4 bytes
 } */
 
 
@@ -196,11 +169,22 @@ main()
 
 
     // 3. WRITE YOUR CODE to step through the data block of root inode
-    prints("read data block of root DIR\n\r");
-    ino = search(ip, "boot"); //Searching for "boot" in root 
+    prints("read data block of root DIR\n\r");  
+    //print_root(ip);  //Print root directory
+    ino = search(ip, "boot") - 1; //Searching for "boot" in root and get it's inode #
+    getblk(iblk+(ino/8), buf2);
+    ip = (INODE *)buf2 + (ino % 8); // ip points to boot's inode
+
+    ino = search(ip, "mtx") -1; //Searching for "mtx" in boot directory and get it's inode #
+    getblk(iblk+(ino/8), buf2);
+    ip = (INODE *)buf2 + (ino % 8); //ip points to mtx's inode
     
+/*     prints("Boot ino=");
+    putc(ino + '0'); //Prints out '=' for the ino #...why?
     prints("\n\r");
-    prints("returned");
+    prints("returned"); */
+
+    //Test code..
 
 
 /*     //! TEST CODE
