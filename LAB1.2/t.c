@@ -114,7 +114,7 @@ u16 search(INODE *ip, char *fname)
     return 0;
 }
 
-/* void print_root(INODE *ip)
+void print_root(INODE *ip)
 {
     for(i=0; i < 12; i++)
     {
@@ -131,7 +131,6 @@ u16 search(INODE *ip, char *fname)
             //strncpy(temp, dp->name, dp->name_len);
             //temp[dp->name_len] = 0; //add null char to the end off the dp->name
             dp->name[dp->name_len] = 0;
-
             prints(dp->name);
             prints("\n\r");
 
@@ -139,7 +138,7 @@ u16 search(INODE *ip, char *fname)
         }
     }
     //return 1; //T This 'return 1' takes additional 4 bytes
-} */
+}
 
 
 main()
@@ -170,58 +169,8 @@ main()
 
     // 3. WRITE YOUR CODE to step through the data block of root inode
     prints("read data block of root DIR\n\r");  
-    //print_root(ip);  //Print root directory
-    ino = search(ip, "boot") - 1; //Searching for "boot" in root and get it's inode #
-    getblk(iblk+(ino/8), buf2);
-    ip = (INODE *)buf2 + (ino % 8); // ip points to boot's inode
-
-    ino = search(ip, "mtx") -1; //Searching for "mtx" in boot directory and get it's inode #
-    getblk(iblk+(ino/8), buf2);
-    ip = (INODE *)buf2 + (ino % 8); //ip points to mtx's inode
-    
-/*     prints("Boot ino=");
-    putc(ino + '0'); //Prints out '=' for the ino #...why?
-    prints("\n\r");
-    prints("returned"); */
-
-    //Test code..
-
-
-/*     //! TEST CODE
-    for (i = 0; i < 12; i++) //* assume DIR at most 12 direct blocks
-    {
-        if (ip->i_block[i] == 0)
-        {
-            break;
-        }
-        prints("returned");
-
-        // YOU SHOULD print i_block[i] number here
-        getblk(ip->i_block[i], buf2);
-        dp = (DIR *)buf2;
-        cp = buf2;
-
-        //puts(" Inode |   |   File Size   |Size   | FName Size | File Name");
-        //puts(" Inode |   |   File Size   |Size   | FName Size | File Name");
-
-        while (cp < buf2 + BLK)
-        {
-            dp->name[dp->name_len] = 0;
-            prints(dp->name);
-        }
-    } */
-
-    //now I need to get the iblk of the inode with the boot
-    
-    
-    //tempino = search(ino, "mtx");
-
-
-    //Possibly getblk on the boot inode to get the mtx
-
-    setes(0x1000);
-
-
-
     // 4. print file names in the root directory /
+
+    print_root(ip);  //Print root directory
+    ino = search(ip, "boot") - 1; //Searching for "boot" in root and get it's inode #
 }
