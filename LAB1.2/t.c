@@ -73,8 +73,8 @@ int gets(char *s)
 
 u16 getblk(u16 blk, char *buf)
 {
-    // readfd( (2*blk)/CYL, ( (2*blk)%CYL)/TRK, ((2*blk)%CYL)%TRK, buf);
-    readfd(blk / 18, ((blk) % 18) / 9, (((blk) % 18) % 9) << 1, buf);
+    readfd( (2*blk)/CYL, ( (2*blk)%CYL)/TRK, ((2*blk)%CYL)%TRK, buf);
+    //readfd(blk / 18, ((blk) % 18) / 9, (((blk) % 18) % 9) << 1, buf);
 }
 
 
