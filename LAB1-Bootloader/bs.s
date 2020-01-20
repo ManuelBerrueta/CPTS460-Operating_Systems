@@ -61,7 +61,7 @@ _putc:
 	
         movb   al,4[bp]        ! get the char into aL
         movb   ah,#14          ! aH = 14
-        movb   bl,#0x0D        ! bL = cyan color 
+        movb   bl,#0x04        ! bL = 0D=cyan color, 0F=white, 0C/04=Light/DarkRed, 0A/02=Light/DarkGreen, 06=orange
         int    0x10            ! call BIOS to display the char
 
         pop    bp

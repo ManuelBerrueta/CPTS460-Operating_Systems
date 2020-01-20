@@ -43,8 +43,8 @@ u16 NSEC = 2;
 char buf1[BLK], buf2[BLK];
 int color = 0x0A;
 u8 ino;
+u16  i, iblk;
 
-u16  i, iblk, tempino;
 
 int prints(char *s)
 {
@@ -59,7 +59,7 @@ int prints(char *s)
 
 int gets(char *s)
 {
-    /* While temp does not equal '\r'*/
+    /* While temp does not equal '\r' == 0x0D*/
     while((*s = getc()) != 0x0D){
         putc(*s);
         s++;
@@ -80,8 +80,6 @@ u16 getblk(u16 blk, char *buf)
 
 u16 search(INODE *ip, char *fname)
 {
-    //prints("in search func");
-
     for(i=0; i < 12; i++)
     {
         if ((u16)ip->i_block[i] == 0)
@@ -102,17 +100,19 @@ u16 search(INODE *ip, char *fname)
             //if (strcmp(fname, temp) == 0)
             if (strcmp(fname, dp->name) == 0)
             {
-                prints("found ino for ");
+                //prints("found ino for ");
                 prints(fname);
-                prints("\n\r");
+                putc('/');
+                //prints("\n\r");
                 return (u16)dp->inode;
             }
             dp = (char *)dp + dp->rec_len;
         }
     }
-    //prints("**inode %s, not found in data blocks\n\n", fname);
+
     return 0;
 }
+
 
 /* void print_root(INODE *ip)
 {
@@ -144,32 +144,24 @@ u16 search(INODE *ip, char *fname)
 
 main()
 {
-    //u16  i, ino, iblk, tempino;
-    char c, temp[64];
-    //char *cp;
+    u32 *up;
 
-    prints("TESTING\n");
-
-    prints("read block# 2 (GD)\n\r");
     getblk(2, buf1);
 
-    // 1. WRITE YOUR CODE to get iblk = bg_inode_table block number
+    //! 1. Code to get iblk = bg_inode_table block number
     gp = (GD *)buf1;                    //Group Descriptor
     iblk = (u16)gp->bg_inode_table;     //Start of inode table
-    prints("inode_block=");
-    putc(iblk + '0');
-    prints("\n\r");
 
-    // 2. WRITE YOUR CODE to get root inode
-    prints("read inodes begin block to get root inode\n\r");
-    //Load the INODES from the  iblk into buf1
+
+    //! 2. Code to get root inode
+    //Load the INODES from the iblk into buf1
     getblk(iblk, buf1);
     ip = (INODE *)buf1; //Cast the start of buf1 is an INODE
     ip++; //INODE #2 == root
 
 
-    // 3. WRITE YOUR CODE to step through the data block of root inode
-    prints("read data block of root DIR\n\r");  
+    //! 3. Code to get to the inode for the Kernel
+    prints("MB Booter Data: /");  
     //print_root(ip);  //Print root directory
     ino = search(ip, "boot") - 1; //Searching for "boot" in root and get it's inode #
     getblk(iblk+(ino/8), buf2);
@@ -178,50 +170,43 @@ main()
     ino = search(ip, "mtx") -1; //Searching for "mtx" in boot directory and get it's inode #
     getblk(iblk+(ino/8), buf2);
     ip = (INODE *)buf2 + (ino % 8); //ip points to mtx's inode
+    prints("\n\r");
     
 /*     prints("Boot ino=");
     putc(ino + '0'); //Prints out '=' for the ino #...why?
     prints("\n\r");
     prints("returned"); */
 
-    //Test code..
 
-
-/*     //! TEST CODE
-    for (i = 0; i < 12; i++) //* assume DIR at most 12 direct blocks
+    if ((u16)ip->i_block[12])
     {
-        if (ip->i_block[i] == 0)
-        {
-            break;
-        }
-        prints("returned");
-
-        // YOU SHOULD print i_block[i] number here
-        getblk(ip->i_block[i], buf2);
-        dp = (DIR *)buf2;
-        cp = buf2;
-
-        //puts(" Inode |   |   File Size   |Size   | FName Size | File Name");
-        //puts(" Inode |   |   File Size   |Size   | FName Size | File Name");
-
-        while (cp < buf2 + BLK)
-        {
-            dp->name[dp->name_len] = 0;
-            prints(dp->name);
-        }
-    } */
-
-    //now I need to get the iblk of the inode with the boot
+        //prints("i_blk[12]");
+        getblk((u16)ip->i_block[12], buf1);
+    }
     
-    
-    //tempino = search(ino, "mtx");
+    //! Start loading MTX Kernel loading segment at memory address 0x1000
+    setes(0x1000);                      //! ES = 0x1000 => BIOS loads disk block to (ES, buf)
 
+    for(i = 0; i < 12; i++)
+    {
+        getblk((u16)ip->i_block[i], 0); //! buf = 0 => memory address = (ES, 0)
+        inces();                        //! inc ES by 1KB/16 = 0x40 
+        putc('*');
+    }
 
-    //Possibly getblk on the boot inode to get the mtx
+    if ((u16)ip->i_block[12])
+    {
+        up = (u32 *)buf1;
 
-    setes(0x1000);
+        while(*up)
+        {
+            getblk((u16)*up, 0);
+            inces();
+            putc('.');
+            up++;
+        }
+    }
 
-
-
-    // 4. print file names in the root directory /
+    prints("go?");
+    getc();
 }
