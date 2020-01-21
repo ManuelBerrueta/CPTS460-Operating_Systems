@@ -149,15 +149,15 @@ main()
 {
     u32 *up;
 
-    getblk(2, buf1);
+    getblk(2, buf1);                    //Load Group Descriptor block
 
     //! 1. Code to get iblk = bg_inode_table block number
     gp = (GD *)buf1;                    //Group Descriptor
-    iblk = (u16)gp->bg_inode_table;     //Start of inode table
+    iblk = (u16)gp->bg_inode_table;     //Start of inode table (i_block with inodes)
 
 
     //! 2. Code to get root inode
-    //Load the INODES from the iblk into buf1
+    //Load the i_block that contains the INODES into buf1, iblk is the block# that contains them
     getblk(iblk, buf1);
     ip = (INODE *)buf1; //Cast the start of buf1 is an INODE
     ip++; //INODE #2 == root
