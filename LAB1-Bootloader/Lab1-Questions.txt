@@ -1,0 +1,59 @@
+CS460 LAB#1 QUESTIONS
+	1.  On Intel x86 based PCs, during booting, what does BIOS do? 
+		○ itself, checks memory, and other devices. Some information needed by the BIOS is kept in a small CMOS RAM, powered by a battery.
+	How many sectors does BIOS load from the boot device? 
+		○ The BIOS loads 1 sector,  the FIRST sector of that device "S0"
+	Where in memory does BIOS load the booter?
+		○ The BIOS loads the booter into memory (segment,offset) = 0x0000 : 0x7C00
+		○ After loading the FIRST sector, the BIOS lets the CPU execute that piece of code
+NOTE: A floppy disk only has 1 boot sector. A hard disk is usually divided into several PARTITIONS, each with its own boot sector. The very first sector on the Hard Disk is called the Master Boot Record  (MBR).
+A hard disk can be divided into 4 Primary Partitions. The partitions are recorded in a Partition Table in the MBR at byte offset 0x1BE.  Each Partition Table entry is a structure as shown below.
+
+	struct partition {
+    u8 drive;                   /* drive number: 0 for A, 0x80 for C */
+    u8 head;                   /* starting head */
+    u8 sector;                 /* starting sector */
+    u8 cyl;                       /* starting cylinder */
+	
+	u8 sys_type;            /* partition type */
+	
+	u8 end_head;          /* end head */
+    u8 end_sector;        /* end sector */
+    u8 end_cyl;              /* end cylinder */
+	
+	u32 start_sector;    /* start sector number */
+    u32 nr_sectors;       /* number sectors */
+    }
+
+	2. BIOS loads only 512 bytes of a booter into memory, which is only the beginning part of the booter. How does the booter load the remaining part of the booter into memory?
+		○ It sets the memory address (ES) to 0x1000
+		○ It reads the first 12 direct i_blocks into memory incrementing memory 1KB at a time per block
+		○ It proceeds to load indirect i_blocks if there is any
+		
+	3. Assume a COMPLETE booter is loaded at the segment 0x9000. WHY do we have to set the CPU's segment registers CS,DS,SS,ES to 0x9000?
+		○ Because the compiler/linker assume one segment memory model. 
+
+	4. How do you find the file /boot/mtx?
+		○ First you must used getblk to get the 2nd block on disc which belongs to the Group Descriptor.
+		○ From the group descriptor we can get the i_block number of the inode_table
+		○ We use getblk again to load the inode_table block# into a buffer
+		○ We cast the inode_table buffer to an INODE* ip, this now points to the first INODE
+		○ We increment the ip + 1 to get to the 2nd INODE, which is the ROOT INODE
+		○ We then use the search function with passing the ip pointer and "boot" to find the boot inode #
+			§ We do this by searching through each of the ip->i_block[i]
+			§ getblk on each ip->i_block into a buffer
+			§ Cast that buffer into dp = (DIR *) buff
+			§ Then we do a search through each dp->name and compare it to "boot"
+			§ Once we find a match, we return the inode#, dp->inode
+		○ We then use getblk again as: getblk(iblk+(ino/8), buf2);
+			§ We divide by 8 because there is 8 inodes per block
+		○ We then cast that buffer into an INODE as so: ip = (INODE *)buf2 + (ino % 8);
+			§ Ino % 8 gets us the right inode#, that is the inode offset within the buffer
+		○ We follow the same above procedure to find "mtx"
+
+	5.  How to load the (disk) blocks of /boot/mtx to the segment 0x1000?
+		○ First we must set the memory address to 0x1000 by using the function setes(0x1000)
+			§ This sets ES register to 0x1000
+		○ We then use getblk for each ip->i_block[i], starting at offset 0 from 0x1000, where ES is set at
+		○ We then increment ES by 1KB for each ip->i_block[i] by using the inces()( function
+		○ We follow a similar procedure for indirect blocks in ip->i_block[12] is there exists any
