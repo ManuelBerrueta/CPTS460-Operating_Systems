@@ -1,0 +1,15 @@
+arm-none-eabi-as -o ts.o ts.s                # assemble ts.s to ts.o
+arm-none-eabi-ld -T t.ld -o t.elf ts.o       # link ts.o to t.elf file
+arm-none-eabi-nm t.elf                       # show symbols in t.elf
+arm-none-eabi-objcopy -O binary t.elf t.bin  # objcopy t.elf to t.bin
+
+# Run the binary executable with qemu emulating arm
+qemu-system-arm -M versatilepb -kernel t.bin -nographic -serial /dev/null
+
+# To check the results use the following commands inside qemu:
+#   info registers      : displays CPU registers
+#                         check R01, it should show R01=00000003
+#   xp /wd address      : display memory contents in 32-bit words
+#   for this command, run the address at R02=0001001c:
+#       xp /wd 0x1001c 
+#                       It should return 3
