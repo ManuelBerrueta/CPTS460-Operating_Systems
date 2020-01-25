@@ -1,0 +1,9 @@
+The program computes the sum of an integer array. The number of array elements (10) is defined in the memory location
+labeled N, and the array elements are defined in the memory area labeled Array. The sum is computed in R0, which is saved
+into the memory location labeled Result. As before, run the mk script to generate a binary executable t.bin. Then run t.bin
+under QEMU. When the program stops, use the monitor commands info and xp to check the results. Figure 2.5 shows the
+results of running the C2.2 program. As the figure shows, the register R0 contains the computed result of 0x37 (55 in
+decimal). The reader may use the command
+
+Use the command arm-none-eabi-nm t.elf to view the symbols with their appropriate address then you can call from
+within qemu xp /wd 0xaddress
