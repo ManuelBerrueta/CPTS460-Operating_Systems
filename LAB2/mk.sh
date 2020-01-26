@@ -1,3 +1,6 @@
+#Needed to include library path
+LIBPATH=/usr/lib/gcc/arm-none-eabi/6.3.1/
+
 # 1. What does the following statement do? 
 #    Assembles ts.s to ts.o targeting the arm926ej-s CPU
 arm-none-eabi-as -mcpu=arm926ej-s -g ts.s -o ts.o

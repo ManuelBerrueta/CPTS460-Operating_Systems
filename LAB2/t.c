@@ -13,7 +13,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************/
-
 typedef unsigned char  u8;
 typedef unsigned short u16;
 typedef unsigned int   u32;
@@ -62,8 +61,8 @@ int main()
   while(1){
     ugets(up, string);
     uprints(up, "    ");
-    /* if (strcmp(string, "quit")==0)
-       break; */
+    if (strcmp(string, "quit")==0)
+       break;
     uprints(up, string);  uprints(up, "\n\r");
   }
 
