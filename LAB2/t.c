@@ -61,7 +61,7 @@ int main()
   while(1){
     ugets(up, string);
     uprints(up, "    ");
-    if (strcmp(string, "quit")==0)
+    if (mystrcmp(string, "quit")==0)
        break;
     uprints(up, string);  uprints(up, "\n\r");
   }
