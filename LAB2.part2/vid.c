@@ -37,7 +37,8 @@ u8 cursor;
 int volatile *fb;
 unsigned char *font;
 int row, col, scrow_row = 4;
-int WIDTH = 640;
+//int WIDTH = 640;
+int WIDTH = 800;
 
 //extern UART *up;
 
@@ -47,21 +48,23 @@ int fbuf_init()
 {
     int x;
     int i;
-    /**** for SVGA 800X600 these values are in ARM DUI02241 *********
+    /**** for SVGA 800X600 these values are in ARM DUI02241 *********/
     *(volatile unsigned int *)(0x1000001c) = 0x2CAC; // 800x600
     *(volatile unsigned int *)(0x10120000) = 0x1313A4C4;
     *(volatile unsigned int *)(0x10120004) = 0x0505F6F7;
     *(volatile unsigned int *)(0x10120008) = 0x071F1800;
-    *(volatile unsigned int *)(0x10120010) = (1*1024*1024);  *(volatile unsigned t *)(0x10120018) = 0x82B;
-    ***************************************************************/
+    *(volatile unsigned int *)(0x10120010) = (6*1024*1024);  
+    *(volatile unsigned int *)(0x10120018) = 0x82B;
+    /**************************************************************/
 
-    /********* for VGA 640x480 ************************/
+    /********* for VGA 640x480 ************************
     *(volatile unsigned int *)(0x1000001c) = 0x2C77;            // LCDCLK SYS_OSCCLK
     *(volatile unsigned int *)(0x10120000) = 0x3F1F3F9C;        // time0
     *(volatile unsigned int *)(0x10120004) = 0x090B61DF;        // time1
     *(volatile unsigned int *)(0x10120008) = 0x067F1800;        // time2
     *(volatile unsigned int *)(0x10120010) = (6 * 1024 * 1024); // panelBaseAddress
     *(volatile unsigned int *)(0x10120018) = 0x82B;             // control register
+    **************************************************************/
 
     /****** at 0x200-0x3FC are LCDpalletes of 128 words ***************
     unsigned int *inten = (unsigned int *)(0x10120200);
@@ -72,7 +75,11 @@ int fbuf_init()
     fb = (int *)(6 * 1024 * 1024); // at 1MB area; enough for 800x600 SVGA
     font = fonts0;                 // use fonts0 for char bit patterns
 
-    // for (x = 0; x < (800 * 600); ++x) // for one BAND
+    // for 800x600 SVGA Mode Display
+    for (x = 0; x < (800 * 600); ++x) // for one BAND
+        fb[x] = 0x00000000; // clean screen; all pixels are BLACK
+    cursor = 127;           // cursor bit map in font0 at 127
+
     /******** these will show 3 bands of BLUE, GREEN, RED ********* 
     for (x = 0; x < (212*480); ++x)
     fb[x] = 0x00FF0000;  //00BBGGRR
@@ -83,9 +90,9 @@ int fbuf_init()
     ************* used only during intial testing ****************/
 
     // for 640x480 VGA mode display
-    for (x = 0; x < 640 * 480; x++)
+/*     for (x = 0; x < 640 * 480; x++)
         fb[x] = 0x00000000; // clean screen; all pixels are BLACK
-    cursor = 127;           // cursor bit map in font0 at 127
+    cursor = 127;           // cursor bit map in font0 at 127 */
 }
 
 int clrpix(int x, int y)
@@ -172,9 +179,17 @@ int scroll()
 int scroll()
 {
     int i;
-    for (i = scrow_row * 16 * 640; i < 640 * 480 - 640 * 16; i++)
+
+    // For 640x480
+/*     for (i = scrow_row * 16 * 640; i < 640 * 480 - 640 * 16; i++)
     {
         fb[i] = fb[i + 640 * 16];
+    } */
+
+    // For 800x600
+    for (i = scrow_row * 16 * 800; i < 800 * 600 - 800 * 16; i++)
+    {
+        fb[i] = fb[i + 800 * 16];
     }
 }
 
@@ -393,7 +408,7 @@ int show_bmp(char *p, int startRow, int startCol)
 
     p += 54; // p point at pixels now
 
-    // but the picture is up-side DOWN
+    // but the picture is up-side DOWNfb[ (i/2) * 640 + (j/2)] = pixel;
 
     r1 = 3 * w;
     r2 = 4 * ((3 * w + 3) / 4); // row size is a multiple of 4 bytes
@@ -410,7 +425,8 @@ int show_bmp(char *p, int startRow, int startCol)
             g = *(pp + 1);      // Points to Green Pixel Color
             r = *(pp + 2);      // Points to Red Pixel Color
             pixel = (b << 16) + (g << 8) + r;
-            fb[ (i/2) * 640 + (j/2)] = pixel;
+            fb[ (i/2) * 800 + (j/2)] = pixel;
+            //fb[ (i/2) * 640 + (j/2)] = pixel;
             //fb[i * 640 + j] = pixel;
             pp += 3; // back pp by 3 bytes
         }
