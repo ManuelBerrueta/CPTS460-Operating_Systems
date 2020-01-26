@@ -22,4 +22,3 @@ start:
   LDR sp, =stack_top   // set SVC stack pointer
   BL main
   B .
-	

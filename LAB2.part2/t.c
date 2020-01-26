@@ -16,21 +16,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "defines.h"
 #include "vid.c"
+#include "uart.c"
+
 
 int color;
 char *tab = "0123456789ABCDEF";
 
-typedef struct uart{
+/* typedef struct uart{
   char *base;
   int  n;
-}UART;
+}UART; */
 
-UART uart[4];
+extern UART uart[4];
+extern UART *up;
 
 extern char _binary_wsu_bmp_start;
+extern int ufprintf(char *fmt, ...);
 
 int color;
-UART *up;
+
 
 int main()
 {
@@ -46,7 +50,7 @@ int main()
    show_bmp(p, 0, 0); 
 
    while(1){
-     uprintf("enter a key from this UART : ");
+     ufprintf("enter a key from this UART : ");
      ugetc(up);
      p = &_binary_wsu_bmp_start;
      show_bmp(p, 0, 0);

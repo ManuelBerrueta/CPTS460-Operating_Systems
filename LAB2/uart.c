@@ -150,6 +150,7 @@ int ufprintf(UART *up, char *fmt, ...)
     int *ip;
     cp = fmt;  //* cp is used to traverse the format string
     ip = (int *)&fmt; //* ip = the address of fmt to traverse up the stack of the parameters passed
+    //ip = (int *)&fmt + 1;
 
     //! Traversing up the stack to the parameters passed to myprintf
     char *temp = cp;

@@ -30,6 +30,7 @@ etc
 ************************************************************************/
 #include "font0"  // NOTE: font0 is NOT a bitmap but  char fonts0={ char map }
 
+
 extern int color;  // define this in your t.c file
 extern char *tab;  // define this in your t.c file: char *tab = "0123456789ABCDEF";
 
@@ -40,7 +41,9 @@ unsigned char *font;
 int row, col, scrow_row = 4;
 int WIDTH = 640;
 
-extern uprintf(char *fmt, ...);  // write this in YOUR uart.c file
+//extern UART *up;
+
+extern int ufprintf(char *fmt, ...); // write this in YOUR uart.c file
 
 int fbuf_init()
 {
@@ -224,7 +227,7 @@ int kputc(char c)
     col=0;
     //printf("row=%d col=%d\n", row, col);
     putcursor(cursor);
-    return;
+    return 1;
   }
   if (c=='\n'){
     row++;
@@ -234,7 +237,7 @@ int kputc(char c)
     }
     //printf("row=%d col=%d\n", row, col);
     putcursor(cursor);
-    return;
+    return 1;
   }
   if (c=='\b'){
     if (col>0){
@@ -242,7 +245,7 @@ int kputc(char c)
       erasechar();
       putcursor(cursor);
     }
-    return;
+    return 1;
   }
   // c is ordinary char
   kpchar(c, row, col);
@@ -372,5 +375,5 @@ int show_bmp(char *p, int startRow, int startCol)
      }
      p -= r2;
    }
-   uprintf("\nBMP image height=%d width=%d\n", h, w);
+   ufprintf("\nBMP image height=%d width=%d\n", h, w);
 }
