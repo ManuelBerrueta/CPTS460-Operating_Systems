@@ -13,7 +13,7 @@ arm-none-eabi-gcc -c -mcpu=arm926ej-s -g t.c -o t.o
 #    Links the ts.o & t.o to the t.elf file
 #       The ld linker script is used to specify the entry point and layout of
 #        the program sections
-arm-none-eabi-ld -T t.ld ts.o t.o -o t.elf
+arm-none-eabi-ld -T t.ld ts.o t.o -o t.elf -L /usr/lib/gcc/arm-none-eabi/6.3.1/ -lgcc 
 
 # 4. What does the following statement do?
 #    Copies and translates the t.elf file into a binary t.bin
