@@ -189,7 +189,7 @@ int ufprintf(char *fmt, ...)
     //! Traversing up the stack to the parameters passed to myprintf
     char *temp = cp;
 
-    while (cp)
+    while (*cp)
     {
         //i++;
         if (*cp == '\n')
