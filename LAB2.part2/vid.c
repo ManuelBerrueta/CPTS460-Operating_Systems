@@ -420,7 +420,7 @@ int show_bmp(char *p, int startRow, int startCol)
 
     int *q = (int *)(p + 14); // skip over 14 bytes file header
     q++;                      // skip 4 bytes in image header
-    w = *q;                   // width in pixels
+    w = *q;                   // width in pixels  "/2" did not work
     h = *(q + 1);             // height in pixels
 
     p += 54; // p point at pixels now
@@ -430,6 +430,9 @@ int show_bmp(char *p, int startRow, int startCol)
     r1 = 3 * w;
     r2 = 4 * ((3 * w + 3) / 4); // row size is a multiple of 4 bytes
     p += (h - 1) * r2;
+
+    int my_height = h / 2;
+    int my_width = w / 2;
 
     //for (i = startRow; i < h/2 + startRow; i += 1)  //This will work too
     for (i = startRow; i < h + startRow; i += 1)
@@ -451,5 +454,6 @@ int show_bmp(char *p, int startRow, int startCol)
         }
         p -= r2;
     }
-    ufprintf("\nBMP image height=%d width=%d\n", h, w);
+    //ufprintf("\nBMP image height=%d width=%d\n", h, w);
+    ufprintf("\nBMP image height=%d width=%d\n", my_height, my_width);
 }
