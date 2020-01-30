@@ -198,16 +198,16 @@ int scroll()
     int i;
 
     // For 640x480
-/*     for (i = scrow_row * 16 * 640; i < 640 * 480 - 640 * 16; i++)
+    for (i = scrow_row * 16 * 640; i < 640 * 480 - 640 * 16; i++)
     {
         fb[i] = fb[i + 640 * 16];
-    } */
+    }
 
-    // For 800x600
+/*     // For 800x600
     for (i = scrow_row * 16 * 800; i < 800 * 600 - 800 * 16; i++)
     {
         fb[i] = fb[i + 800 * 16];
-    }
+    } */
 }
 
 int kpchar(char c, int ro, int co)
