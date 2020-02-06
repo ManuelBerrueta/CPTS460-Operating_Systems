@@ -60,9 +60,9 @@ int main()
     SIC_INTENABLE = 0;
     SIC_INTENABLE |= (1 << 3); // KBD int=SIC.bit3
     
-    timer_init();              // initialize timer
+    //timer_init();              // initialize timer
     
-    timer_start(0);            // start timer0
+    //timer_start(0);            // start timer0
     
     kbd_init();                // initialize keyboard driver
     

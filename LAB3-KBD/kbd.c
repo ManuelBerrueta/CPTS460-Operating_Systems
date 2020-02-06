@@ -1,4 +1,5 @@
 #include "keymap"
+#include "keymap2"
 //#include "uart.c"
 
 /******** KBD register byte offsets; for char *base *****/
@@ -34,6 +35,7 @@ int kbd_init()
 
 void kbd_handler() // KBD interrupt handler in C
 {
+    char kbd_temp[8];
     u8 scode, c;
     int i;
     KBD *kp = &kbd;
@@ -42,9 +44,13 @@ void kbd_handler() // KBD interrupt handler in C
     if (scode & 0x80)            // ignore key releases
         return;
     //c = unsh[scode]; // map scan code to ASCII
-    c = unshift[scode]; // map scan code to ASCII
+    //c = unshift[scode]; // map scan code to ASCII
+    c = utab[scode];
     if (c != '\r')
+    {
         kprintf("kbd interrupt: c=%x %c\n", c, c);
+        kgets(kbd_temp);
+    }
     kp->buf[kp->head++] = c; // enter key into CIRCULAR buf[ ]
     kp->head %= 128;
     kp->data++;
