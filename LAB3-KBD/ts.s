@@ -18,11 +18,22 @@ reset_handler: // entry point of program
     // call main() in SVC mode
     BL main
     B .
+
 irq_handler:
     sub lr, lr, #4
     stmfd sp!, {r0-r12, lr} // stack ALL registers
     bl IRQ_handler // call IRQ_hanler() in C
     ldmfd sp!, {r0-r3, r12, pc}^ // return
+
+undef_handler:
+
+swi_handler:
+
+prefetch_abort_handler:
+
+data_abort_handler:
+
+fiq_handler:
 
 lock: // mask out IRQ interrupts
     MRS r0, cpsr
@@ -35,6 +46,8 @@ unlock: // mask in IRQ interrupts
     BIC r0, r0, #0x80 // clr I bit means MASK in IRQ interrupts
     MSR cpsr, r0
     mov pc, lr
+
+
 
 vectors_start:
     LDR PC, reset_handler_addr              //0x00
