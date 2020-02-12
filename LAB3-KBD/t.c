@@ -75,6 +75,5 @@ int main()
         kprintf("Enter a line from KBD\n");
         kgets(line);
         kprintf("line = %s\n", line);
-        kgets(line);
     }
 }
