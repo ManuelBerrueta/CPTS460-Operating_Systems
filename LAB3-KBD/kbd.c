@@ -19,7 +19,12 @@ typedef volatile struct kbd
 } KBD;
 
 volatile KBD kbd; // KBD data structure
-
+int keyset = 0;
+int release = 0;
+int shiftKey = 0;
+int ctrlKey = 0;
+int ctrl_d = 0;
+int ctrl_c = 0;
 
 int kbd_init()
 {
@@ -30,10 +35,36 @@ int kbd_init()
     kp->data = 0;
     kp->room = 128;          // counters
     kp->head = kp->tail = 0; // index to buffer
+
+    shiftKey = 0;
+    release = 0;
 }
 
+/* void kbd_handler() // KBD interrupt handler in C
+{
+    char kbd_temp[8];
+    u8 scode, c;
+    int i;
+    KBD *kp = &kbd;
+    color = RED;                 // int color in vid.c file
+    scode = *(kp->base + KDATA); // read scan code in data register
+    if (scode & 0x80)            // ignore key releases
+        return;
+    //c = unsh[scode]; // map scan code to ASCII
+    //c = unshift[scode]; // map scan code to ASCII
+    c = utab[scode];
+    if (c != '\r')
+    {
+        kprintf("kbd interrupt: c=%x %c\n", c, c);
+        kgets(kbd_temp);
+    }
+    kp->buf[kp->head++] = c; // enter key into CIRCULAR buf[ ]
+    kp->head %= 128;
+    kp->data++;
+    kp->room--; // update counters
+} */
 
-void kbd_handler() // KBD interrupt handler in C
+void kbd_handler_1() // KBD interrupt handler in C
 {
     char kbd_temp[8];
     u8 scode, c;
@@ -58,6 +89,141 @@ void kbd_handler() // KBD interrupt handler in C
 }
 
 
+
+void kbd_handler() // KBD interrupt handler in C
+{
+    kprintf("TEST KBD\n");
+
+    char kbd_temp[8];
+    u8 scode, c;
+    int i;
+    KBD *kp = &kbd;
+    color = RED;                 // int color in vid.c file
+    scode = *(kp->base + KDATA); // read scan code in data register
+
+    //  if (scode & 0x80)            // ignore key releases
+    //    return;
+    //c = unsh[scode]; // map scan code to ASCII
+    //c = unshift[scode]; // map scan code to ASCII
+
+    kprintf("TEST KBD\n");
+
+    //* Check scan scodes:
+    //Left Control Key check
+    if (scode == 0x14)
+    {
+        ctrlKey = 1;
+    }
+
+    // Left Shift Key Check
+    if (scode == 0x12)
+    {
+        shiftKey = 1;
+    }
+
+    if (scode == 0xF0) // Press/release
+    {
+        release = 1;
+
+        return;
+    }
+
+    //Choose upper or lower case based on left shift key:
+/*     if (shiftKey) // if shift key is pressed
+    {
+        c = utab[scode];
+    }
+    else // shift key is not pressed
+    {
+        c = ltab[scode];
+    } */
+
+/*     if (c != '\r')
+    {
+        kprintf("kbd interrupt: c=%x %c\n", c, c);
+        kgets(kbd_temp);
+    } */
+
+    if (scode == 0x14 && release)
+    {
+        ctrl_d = 0;
+        ctrl_c = 0;
+        ctrlKey = 0;
+        release = 0;
+
+        return;
+    }
+    else if (scode == 0x12 && release)
+    {
+        shiftKey = 0;
+        release = 0;
+
+        return;
+    }
+    else if (release)
+    {
+        release = 0;
+
+        return;
+    }
+
+    
+    if (scode == 0x23 && ctrlKey)
+    {
+        ctrl_d = 1;
+        c = 0x04;
+
+        kprintf("CTRL + D \n");
+
+        kgets(kbd_temp);
+
+    }
+
+    if (scode == 0x21 && ctrlKey)
+    {
+        kprintf("CTRL + C \n"); //Trying to kill program
+        kgets(kbd_temp);
+
+        return;
+    }
+
+    //if (ctrl_d == 0)
+    if (!ctrl_d)
+    {
+        
+        if (shiftKey)
+        {
+            c = utab[scode];
+        }
+        else
+        {
+            c = ltab[scode];
+        }        
+    }
+
+    kprintf("kbd interrupt: c=%x %c\n", c, c);
+    kgets(kbd_temp);
+
+/*     if (c != '\r' && release == 0)
+    {
+        kprintf("kbd interrupt: c=%x %c\n", c, c);
+        //kgets(kbd_temp);
+    } */
+    //kgets(kbd_temp);
+
+    /* if (c != '\r')
+    {
+        kprintf("kbd interrupt: c=%x %c\n", c, c);
+        kgets(kbd_temp);
+    } */
+
+
+    kp->buf[kp->head++] = c; // enter key into CIRCULAR buf[ ]
+    kp->head %= 128;
+    kp->data++;
+    kp->room--; // update counters
+}
+
 int kgetc() // main program calls kgetc() to return a char
 {
     char c;
@@ -73,7 +239,6 @@ int kgetc() // main program calls kgetc() to return a char
     unlock();   // enable IRQ interrupts
     return c;
 }
-
 
 int kgets(char s[]) // get a string from KBD
 {

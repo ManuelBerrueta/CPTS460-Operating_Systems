@@ -38,6 +38,7 @@ void IRQ_handler() // IRQ interrupt handler in C
     { // PIC.bit31= SIC interrupts
         if (sicstatus & (1 << 3))
         { // SIC.bit3 = KBD interrupt
+            //kbd_handler();
             kbd_handler();
         }
     }
@@ -74,5 +75,6 @@ int main()
         kprintf("Enter a line from KBD\n");
         kgets(line);
         kprintf("line = %s\n", line);
+        kgets(line);
     }
 }
