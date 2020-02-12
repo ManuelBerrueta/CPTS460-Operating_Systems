@@ -11,6 +11,9 @@
 
 extern int color;
 
+int SHIFT = 0;
+int KEY_RELEASE = 0;
+
 typedef volatile struct kbd
 {                               // base = 0x10006000
     char *base;                 // base address of KBD, as char *
@@ -22,7 +25,7 @@ volatile KBD kbd; // KBD data structure
 
 
 int kbd_init()
-{
+{    
     KBD *kp = &kbd;
     kp->base = (char *)0x10006000;
     *(kp->base + KCNTL) = 0x14; // 00010100=INTenable, Enable
@@ -41,10 +44,24 @@ void kbd_handler() // KBD interrupt handler in C
     KBD *kp = &kbd;
     color = RED;                 // int color in vid.c file
     scode = *(kp->base + KDATA); // read scan code in data register
+
+
     if (scode & 0x80)            // ignore key releases
         return;
-    //c = unsh[scode]; // map scan code to ASCII
-    //c = unshift[scode]; // map scan code to ASCII
+    //c = unsh[scode]; // map scan code to ASCII     //For keymap
+    //c = unshift[scode]; // map scan code to ASCII  //For keymap
+
+    
+    //! ********************* CONTROL CODE *********************
+    // If Key has been released:
+    if (scode == 0xf0){
+        KEY_RELEASE = 1; //We set our flag to 1
+        return;
+    }
+
+    
+
+
     c = utab[scode];
     if (c != '\r')
     {
