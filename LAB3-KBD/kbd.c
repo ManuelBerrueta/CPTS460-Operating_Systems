@@ -23,7 +23,6 @@ int keyset = 0;
 int release = 0;
 int shiftKey = 0;
 int ctrlKey = 0;
-int ctrl_d = 0;
 int ctrl_c = 0;
 
 int kbd_init()
@@ -36,7 +35,7 @@ int kbd_init()
     kp->room = 128;          // counters
     kp->head = kp->tail = 0; // index to buffer
 
-    shiftKey = 0;
+    //shiftKey = 0;
     release = 0;
 }
 
@@ -108,6 +107,14 @@ void kbd_handler() // KBD interrupt handler in C
 
     kprintf("TEST KBD\n");
 
+    // Key Release
+    if (scode == 0xF0) 
+    {
+        release = 1;
+
+        return;
+    }
+
     //* Check scan scodes:
     //Left Control Key check
     if (scode == 0x14)
@@ -121,12 +128,6 @@ void kbd_handler() // KBD interrupt handler in C
         shiftKey = 1;
     }
 
-    if (scode == 0xF0) // Press/release
-    {
-        release = 1;
-
-        return;
-    }
 
     //Choose upper or lower case based on left shift key:
 /*     if (shiftKey) // if shift key is pressed
@@ -144,16 +145,17 @@ void kbd_handler() // KBD interrupt handler in C
         kgets(kbd_temp);
     } */
 
+    // if realease left control shift key
     if (scode == 0x14 && release)
     {
-        ctrl_d = 0;
-        ctrl_c = 0;
+        //ctrl_d = 0;
+        ctrl_c = 0; //Flag for ctrl+c to signal close program
         ctrlKey = 0;
         release = 0;
 
         return;
     }
-    else if (scode == 0x12 && release)
+    else if (scode == 0x12 && release) //if Left Shift Key release
     {
         shiftKey = 0;
         release = 0;
@@ -170,13 +172,11 @@ void kbd_handler() // KBD interrupt handler in C
     
     if (scode == 0x23 && ctrlKey)
     {
-        ctrl_d = 1;
-        c = 0x04;
+        c = 0x04; //Set to EOF
 
         kprintf("CTRL + D \n");
 
         kgets(kbd_temp);
-
     }
 
     if (scode == 0x21 && ctrlKey)
@@ -187,19 +187,18 @@ void kbd_handler() // KBD interrupt handler in C
         return;
     }
 
-    //if (ctrl_d == 0)
-    if (!ctrl_d)
+
+
+     
+    if (shiftKey)
     {
-        
-        if (shiftKey)
-        {
-            c = utab[scode];
-        }
-        else
-        {
-            c = ltab[scode];
-        }        
+        c = utab[scode];
     }
+    else
+    {
+        c = ltab[scode];
+    }        
+
 
     kprintf("kbd interrupt: c=%x %c\n", c, c);
     kgets(kbd_temp);
