@@ -3,10 +3,10 @@
 #include "uart.c"
 #include "string.c"
 #include "timer.c"
-void timer_handler();
+//void timer_handler();
 #include "kbd.c"
 #include "vid.c"
-//#include "exceptions.c"
+#include "exceptions.c"
 
 int color;
 char *tab = "0123456789ABCDEF";
@@ -29,10 +29,10 @@ void IRQ_handler() // IRQ interrupt handler in C
     // read VIC status registers to find out which interrupt
     int vicstatus = VIC_STATUS;
     // VIC status BITs: timer0,1=4, uart0=13, uart1=14
-    if (vicstatus & (1 << 4))
+    /* if (vicstatus & (1 << 4))
     {                     // bit4=1:timer0,1
         timer_handler(0); // timer0 only
-    }
+    } */
     int sicstatus = SIC_STATUS;
     if (vicstatus & (1 << 31))
     { // PIC.bit31= SIC interrupts

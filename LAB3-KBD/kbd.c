@@ -174,7 +174,7 @@ void kbd_handler() // KBD interrupt handler in C
     {
         c = 0x04; //Set to EOF
 
-        kprintf("CTRL + D \n");
+        kprintf("CTRL + D: %x \n", c);
 
         kgets(kbd_temp);
     }
@@ -202,6 +202,12 @@ void kbd_handler() // KBD interrupt handler in C
 
     kprintf("kbd interrupt: c=%x %c\n", c, c);
     kgets(kbd_temp);
+
+    int k = 0;
+
+    while(k < 1000000){
+        k++;
+    }
 
 /*     if (c != '\r' && release == 0)
     {
