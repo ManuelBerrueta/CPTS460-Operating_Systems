@@ -67,7 +67,7 @@ int main()
    SIC_ENSET = 1<<3;     // KBD int=3 on SIC
    SIC_PICENSET = 1<<3;  // KBD int=3 on SIC
 
-   kprintf("Welcome to WANIX in Arm\n");
+   kprintf("Welcome to BERRNIX in Arm\n");
    init();
    kfork((int)body, 1);
    printf("P0 switch to P1\n");
