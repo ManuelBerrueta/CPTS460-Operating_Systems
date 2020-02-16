@@ -79,9 +79,37 @@ int scheduler()
 }
 
 
+int sleepTime()
+{
+    char inEvent[8];
+    int tempEvent = -99;
+    
+    printf("\n==[Enter Sleep Event Value::> ");
+    kgets(inEvent);
+    
+    tempEvent = atoi(inEvent);
+    ksleep(tempEvent);
+}
+
+
+int wakeupTime()
+{
+    char inEvent[8];
+    int tempEvent = -99;
+
+    printf("\n==[Enter Wakeup Event Value::> ");
+    kgets(inEvent);
+
+
+    tempEvent = atoi(inEvent);
+    kwakeup(tempEvent);
+}
+
+
 int body()
 {
     char c, cmd[64];
+    int tempEvent = -99;
 
     kprintf("proc %d resume to body()\n", running->pid);
     while (1)
@@ -97,9 +125,21 @@ int body()
         kgets(cmd);
 
         if (strcmp(cmd, "switch") == 0)
+        {
             tswitch();
+        }
         else if (strcmp(cmd, "kfork") == 0)
+        {
             kfork((int)body, 1);
+        }
+        else if (strcmp(cmd, "sleep") == 0)
+        {
+            sleepTime();
+        }
+        else if (strcmp(cmd, "wakeup") == 0)
+        {
+            wakeupTime();
+        }
         else if (strcmp(cmd, "exit") == 0)
         {
             kexit();

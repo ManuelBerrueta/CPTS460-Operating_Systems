@@ -24,7 +24,11 @@ int ksleep(int event)
     running->event = event;     // Record the event value in the Proc
     running->status = SLEEP;    // Change Running Proc to SLEEP == 2 status
 
-    printf("Go to Sleep PROC[%d] | EVENT: %d\n ", running->pid, running->event);
+    printf("\nGo to Sleep PROC[%d] | EVENT: %d\n ", running->pid, running->event);
+
+    enqueue(&sleepList, running);
+
+    printList("SleepList = ", sleepList);
 
     tswitch();                  // Switch Process
 
@@ -34,7 +38,7 @@ int ksleep(int event)
 
 int kwakeup(int event)
 {
-    PROC *eachProc = 0;
+    PROC *eachProc;
     PROC *tempSleepList = 0;
 
     int SR = int_off();         // Disable IRQ Interrupts and return CPSR
@@ -52,8 +56,9 @@ int kwakeup(int event)
     {
         if (eachProc->event == event)
         {
+            printf("\nFound PROC[%d] matching EVENT: %d\n\t |-> WOKE UP PROC[%d]\n", eachProc->pid, event, eachProc->pid);
+            //printf("Wakeup Proc: %d\n", eachProc->pid);
             eachProc->status = READY;       // READY == 1
-            printf("Found PROC[%d] matching EVENT: %d\n\t |-> WOKE UP PROC[%d]\n", eachProc->pid, event, eachProc->pid);
             enqueue(&readyQueue, eachProc);
         }
         else
@@ -62,4 +67,8 @@ int kwakeup(int event)
         }
     }
     sleepList = tempSleepList;
+    
+    int_on(SR);
+
+    return 0;
 }
