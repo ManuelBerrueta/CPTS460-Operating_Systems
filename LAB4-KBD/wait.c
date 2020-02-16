@@ -3,19 +3,22 @@
 extern PROC *running;
 extern PROC *sleepList;
 
-int kexit()  // SIMPLE kexit() for process to terminate
+
+int kexit() // SIMPLE kexit() for process to terminate
 {
-  printf("proc %d exit\n", running->pid);
-  running->status = ZOMBIE;
-  tswitch();
+    printf("proc %d exit\n", running->pid);
+    running->status = ZOMBIE;
+    tswitch();
 }
+
 
 int ksleep(int event)
 {
-  // implement this
+    // implement this
 }
+
 
 int kwakeup(int event)
 {
-  // implement this
+    // implement this
 }

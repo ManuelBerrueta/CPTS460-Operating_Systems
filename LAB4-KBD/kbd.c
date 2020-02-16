@@ -49,6 +49,7 @@ int kbd_init()
     printf("keyset=%d\n", keyset);
 }
 
+
 // kbd_handler1() for scan code set 1
 void kbd_handler1()
 {
@@ -70,6 +71,7 @@ void kbd_handler1()
     kp->data++;
     kp->room--;
 }
+
 
 // kbd_handelr2() for scan code set 2
 void kbd_handler2()
@@ -195,6 +197,7 @@ void kbd_handler2()
 
 } */
 
+
 void kbd_handler()
 {
     if (keyset == 1)
@@ -202,6 +205,7 @@ void kbd_handler()
     else
         kbd_handler2();
 }
+
 
 int kgetc()
 {
@@ -219,6 +223,7 @@ int kgetc()
     unlock();
     return c;
 }
+
 
 int kgets(char s[])
 {

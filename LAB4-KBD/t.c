@@ -24,55 +24,64 @@ int color;
 #include "kernel.c"
 #include "wait.c"
 
-void copy_vectors(void) {
+int kprintf(char *fmt, ...);
+int body();
+
+
+void copy_vectors(void)
+{
     extern u32 vectors_start;
     extern u32 vectors_end;
     u32 *vectors_src = &vectors_start;
     u32 *vectors_dst = (u32 *)0;
 
-    while(vectors_src < &vectors_end)
-       *vectors_dst++ = *vectors_src++;
+    while (vectors_src < &vectors_end)
+        *vectors_dst++ = *vectors_src++;
 }
-int kprintf(char *fmt, ...);
+
+
 void IRQ_handler()
 {
     int vicstatus, sicstatus;
     vicstatus = VIC_STATUS; // VIC_STATUS=0x10140000=status reg
-    sicstatus = SIC_STATUS;  
+    sicstatus = SIC_STATUS;
 
-    if (vicstatus & (1 << 31)){
-      if (sicstatus & (1 << 3)){
-          kbd_handler();
-       }
+    if (vicstatus & (1 << 31))
+    {
+        if (sicstatus & (1 << 3))
+        {
+            kbd_handler();
+        }
     }
 }
 
-int body();
+
 int main()
-{ 
-   int i; 
-   char line[128]; 
-   //   u8 kbdstatus, key, scode;
+{
+    int i;
+    char line[128];
+    //   u8 kbdstatus, key, scode;
 
-   color = WHITE;
-   row = col = 0; 
+    color = WHITE;
+    row = col = 0;
 
-   fbuf_init();
-   kbd_init();
-   
-   // allow KBD interrupts   
-   VIC_INTENABLE |= (1<<31); // allow VIC IRQ31
+    fbuf_init();
+    kbd_init();
 
-   // enable KBD IRQ 
-   SIC_ENSET = 1<<3;     // KBD int=3 on SIC
-   SIC_PICENSET = 1<<3;  // KBD int=3 on SIC
+    // allow KBD interrupts
+    VIC_INTENABLE |= (1 << 31); // allow VIC IRQ31
 
-   kprintf("Welcome to BERRNIX in Arm\n");
-   init();
-   kfork((int)body, 1);
-   printf("P0 switch to P1\n");
-   while(1){
-     if (readyQueue)
-        tswitch();
-   }
+    // enable KBD IRQ
+    SIC_ENSET = 1 << 3;    // KBD int=3 on SIC
+    SIC_PICENSET = 1 << 3; // KBD int=3 on SIC
+
+    kprintf("Welcome to BERRNIX in Arm\n");
+    init();
+    kfork((int)body, 1);
+    printf("P0 switch to P1\n");
+    while (1)
+    {
+        if (readyQueue)
+            tswitch();
+    }
 }
