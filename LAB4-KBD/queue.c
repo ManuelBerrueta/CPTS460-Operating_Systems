@@ -16,7 +16,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // queue.c file
 //extern PROC *freeList;
-int enqueue(PROC **queue, PROC *p)
+PROC *getproc(PROC **list)
+{
+  PROC *p = *list;
+  if (p){
+    *list = p->next;
+  }
+  return p;
+}
+
+
+int putproc(PROC **list, PROC *p)
+{
+  p->next = *list;
+  *list = p;
+}
+
+
+int enqueue(PROC **queue, PROC *p)      //! different thean pipe.tgz
 {
     PROC *q = *queue;
     if (q == 0 || p->priority > q->priority)
@@ -43,6 +60,26 @@ PROC *dequeue(PROC **queue)
 }
 
 
+int printQ(PROC *p)
+{
+  kprintf("readyQueue = ");
+  while(p){
+    kprintf("[%d%d]->", p->pid,p->priority);
+    p = p->next;
+  }
+  kprintf("NULL\n");
+}
+
+
+int printQueue(PROC *p)
+{
+  while(p){
+    kprintf("[%d%d]->", p->pid,p->priority);
+    p = p->next;
+  }
+  kprintf("NULL\n");
+}
+
 int printList(char *name, PROC *p)
 {
     printf("%s=", name);
@@ -57,7 +94,7 @@ int printList(char *name, PROC *p)
 
 int printsleepList(PROC *p)
 {
-    printf("sleepList=");
+    printf("sleepList =");
     while (p)
     {
         printf("[%devent=%x]->", p->pid, p->event);

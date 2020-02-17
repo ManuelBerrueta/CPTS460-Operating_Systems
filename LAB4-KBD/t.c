@@ -155,13 +155,12 @@ int main()
     //New code for pipe
     init(); */
     color=PURPLE;
-    kprintf("P0 kfork tasks: \n");
-    color=BLUE;
+    kprintf("P%d kfork tasks: \n",running->pid);
+    color=YELLOW;
     //kfork(pipe_writer, 1);                //! Uncomment/comment for pipe testing
     //kfork(pipe_reader, 1);                //! Uncomment/comment for pipe testing
+    printQ(readyQueue);                   //! Requires new queue.c from pipe.tgz
     color=WHITE;
-
-    //printQ(readyQueue);                   //! Requires new queue.c from pipe.tgz
 
     unlock();
     color=RED;

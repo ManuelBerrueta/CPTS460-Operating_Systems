@@ -1,7 +1,7 @@
 // kernel.c file
 
-//extern PROC *getproc();                         //! This is in new queue.c from pipe.tgz
-//extern PROC *dequeue();                         //! This is in new queue.c from pipe.tgz
+extern PROC *getproc();                         //! This is in new queue.c from pipe.tgz
+extern PROC *dequeue();                         //! This is in new queue.c from pipe.tgz
 extern int pipe_writer(), pipe_reader();
 extern PIPE *kpipe;                             //! gives error, in t.c need to sort out includes
 
