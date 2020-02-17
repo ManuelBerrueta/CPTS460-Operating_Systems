@@ -15,13 +15,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************/
 
 #define NPIPE 10
-
 #define PSIZE 8
+
 typedef struct pipe{
-  char buf[PSIZE];
-  int head, tail, data, room;
-  int nreader, nwriter;
-  int busy;
+  char buf[PSIZE];        // Circular data buffer
+  int head, tail;         // Circular buffer index
+  int data, room;         // Number of data & room in pipe
+  int nreader, nwriter;   // 
+  int busy;               // Free or Busy Status
 }PIPE;
 
 PIPE pipe[NPIPE];
@@ -36,7 +37,8 @@ int pipe_init()
   }
 }
 
-PIPE *create_pipe()
+//Create pipe object in shared address space of all processes
+PIPE *create_pipe()   //Allocate a free PIPE, initizze and turen a pointer to it.
 {
   int i; PIPE *p;
   printf("creating pipe ");
@@ -54,6 +56,7 @@ PIPE *create_pipe()
   return p;
 }
 
+// Read n bytes from pipe. Returns actual number of bytes read from pipe.
 int read_pipe(PIPE *p, char *buf, int n)
 {
   int r = 0;
@@ -76,7 +79,8 @@ int read_pipe(PIPE *p, char *buf, int n)
   }
 }
 
-int write_pipe(PIPE *p, char *buf, int n)
+// Write n bytes from the *buf to the pipe; return # bytes written to pipe.
+int write_pipe(PIPE *p, char *buf, int n) 
 {
   int r = 0; int w = 0;
     

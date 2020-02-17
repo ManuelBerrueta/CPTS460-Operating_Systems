@@ -136,7 +136,7 @@ int body()
         printList("readyQueue", readyQueue);
         printsleepList(sleepList);
 
-        printf("Enter a command [switch|kfork|exit] : ",
+        printf("Enter a command [sleep|wakeup|switch|kfork|exit] : ",
                running->pid);
         kgets(cmd);
 
