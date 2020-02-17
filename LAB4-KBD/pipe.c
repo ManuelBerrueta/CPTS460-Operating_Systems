@@ -102,6 +102,3 @@ int write_pipe(PIPE *p, char *buf, int n)
     ksleep((int)&p->room);
   }
 }
-
-
-  

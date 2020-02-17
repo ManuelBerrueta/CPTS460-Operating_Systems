@@ -132,41 +132,45 @@ int main()
 
     *(kp->base + KCNTL) = 0x12;                     //!From pipe.tgz
 
+    init();
+
     uart_init();
 
     pipe_init();
 
     kpipe = create_pipe();
 
-    init();
+
+    //! For PIPE TESTING:
+
+/*     color=PURPLE;
+    kprintf("P%d kfork tasks: \n",running->pid);
+    color=YELLOW;
+
+    kfork((int)pipe_writer, 1);                //! Uncomment/comment for pipe testing
+    kfork((int)pipe_reader, 1);                //! Uncomment/comment for pipe testing
+    color=WHITE;
+    printQ(readyQueue);                   //! Requires new queue.c from pipe.tgz
+    color=WHITE;
+
+    unlock();
+    while (1)
+    {
+        if (readyQueue)
+            tswitch();
+    } */
+
+    //! PIPE Testing Code end - Anything below can be commented out for pipe test
+
 
     color=CYAN;
     kfork((int)body, 1);
     color = WHITE;
 
-/*     printf("P0 switch to P1\n");
-    while (1)
-    {
-        if (readyQueue)
-            tswitch();
-    }
-
-    
-    //New code for pipe
-    init(); */
-    color=PURPLE;
-    kprintf("P%d kfork tasks: \n",running->pid);
-    color=YELLOW;
-    //kfork(pipe_writer, 1);                //! Uncomment/comment for pipe testing
-    //kfork(pipe_reader, 1);                //! Uncomment/comment for pipe testing
-    printQ(readyQueue);                   //! Requires new queue.c from pipe.tgz
-    color=WHITE;
-
     unlock();
     color=RED;
     printf("P%d switch to P1\n", running->pid);
     color=WHITE;
-
     while(1)                                //! Probably not due to kforks above
     {
         if (readyQueue)
