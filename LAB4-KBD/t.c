@@ -22,9 +22,9 @@ int color;
 #include "vid.c"
 #include "kbd.c"
 #include "exceptions.c"
+#include "pipe.c"
 #include "kernel.c"
 #include "wait.c"
-#include "pipe.c"
 #include "uart.c"
 
 //char *tab = "0123456789ABCDEF";

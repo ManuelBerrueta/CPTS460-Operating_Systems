@@ -3,7 +3,7 @@
 //extern PROC *getproc();                         //! This is in new queue.c from pipe.tgz
 //extern PROC *dequeue();                         //! This is in new queue.c from pipe.tgz
 extern int pipe_writer(), pipe_reader();
-//extern PIPE *kpipe;                             //! gives error, in t.c need to sort out includes
+extern PIPE *kpipe;                             //! gives error, in t.c need to sort out includes
 
 #define NPROC 9
 PROC proc[NPROC], *running, *freeList, *readyQueue, *sleepList;
@@ -64,14 +64,14 @@ int kfork(int func, int priority)           //! kfork is different in pipe.tgz
     p->kstack[SSIZE - 1] = (int)func; // in dec reg=address ORDER !!!
     p->ksp = &(p->kstack[SSIZE - 14]);
     
-/*     if (func == pipe_writer)
+    if (func == pipe_writer)
     {
         kpipe->nwriter++;
     }
     if (func == pipe_reader)
     {
         kpipe->nreader++;
-    } */
+    }
     
     enqueue(&readyQueue, p);
     
