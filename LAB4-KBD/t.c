@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************/
 int color;
 
+#include "defines.h"
 #include "type.h"
 #include "string.c"
 #include "queue.c"
@@ -26,9 +27,12 @@ int color;
 #include "pipe.c"
 #include "uart.c"
 
+//char *tab = "0123456789ABCDEF";
+
 PIPE *kpipe;
 
 int kprintf(char *fmt, ...);
+//int kputc(char);                      //! in pipe.tgz
 int body();
 
 void copy_vectors(void)
@@ -153,8 +157,8 @@ int main()
     color=PURPLE;
     kprintf("P0 kfork tasks: \n");
     color=BLUE;
-    kfork(pipe_writer, 1);
-    kfork(pipe_reader, 1);
+    //kfork(pipe_writer, 1);                //! Uncomment/comment for pipe testing
+    //kfork(pipe_reader, 1);                //! Uncomment/comment for pipe testing
     color=WHITE;
 
     //printQ(readyQueue);                   //! Requires new queue.c from pipe.tgz

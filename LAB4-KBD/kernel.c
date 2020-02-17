@@ -1,5 +1,10 @@
 // kernel.c file
 
+//extern PROC *getproc();                         //! This is in new queue.c from pipe.tgz
+//extern PROC *dequeue();                         //! This is in new queue.c from pipe.tgz
+extern int pipe_writer(), pipe_reader();
+//extern PIPE *kpipe;                             //! gives error, in t.c need to sort out includes
+
 #define NPROC 9
 PROC proc[NPROC], *running, *freeList, *readyQueue, *sleepList;
 int procsize = sizeof(PROC);
@@ -35,7 +40,7 @@ int init()
 }
 
 
-int kfork(int func, int priority)
+int kfork(int func, int priority)           //! kfork is different in pipe.tgz
 {
     int i;
     PROC *p = dequeue(&freeList);
@@ -53,11 +58,23 @@ int kfork(int func, int priority)
     // stack = r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r14
     //         1  2  3  4  5  6  7  8  9  10 11  12  13  14
     for (i = 1; i < 15; i++)
+    {
         p->kstack[SSIZE - i] = 0;
+    }
     p->kstack[SSIZE - 1] = (int)func; // in dec reg=address ORDER !!!
     p->ksp = &(p->kstack[SSIZE - 14]);
+    
+/*     if (func == pipe_writer)
+    {
+        kpipe->nwriter++;
+    }
+    if (func == pipe_reader)
+    {
+        kpipe->nreader++;
+    } */
+    
     enqueue(&readyQueue, p);
-
+    
     printf("proc %d kforked a child %d\n", running->pid, p->pid);
     printList("readyQueue", readyQueue);
     return p->pid;

@@ -1,16 +1,17 @@
 // kbd.c file
 
+#include "keymap"
+#include "keymap2"
+
 #define KCNTL 0x00
 #define KSTAT 0x04
 #define KDATA 0x08
 #define KCLK 0x0C
 #define KISTA 0x10
 
-#include "keymap"
-#include "keymap2"
-
 extern int ksleep(int event);
 extern int kwakeup(int event);
+extern int kputc(char);             //! From pipe.tgz
 
 typedef struct kbd                  // base = 0x10006000
 {
@@ -18,10 +19,10 @@ typedef struct kbd                  // base = 0x10006000
     char buf[128];                  // Input Buffer
     int head, tail, data, room;     // control variables
 } KBD;
-
-KBD kbd;
+                                    
+KBD kbd;                            //! Also volatile KBD kbd; in pipe.tgz
 int release;
-int keyset;
+int keyset;                         //! Also volatile int keyset; in pipe.tgz
 int shiftKey = 0;
 int ctrlKey = 0;
 int ctrl_c = 0;
