@@ -51,6 +51,7 @@ void IRQ_handler()
         if (sicstatus & (1 << 3))
         {
             kbd_handler();
+            //kfork((int)kbd_handler, 1); // It's own process to go to sleep
         }
     }
 }
@@ -66,7 +67,9 @@ int main()
     row = col = 0;
 
     fbuf_init();
+    
     kbd_init();
+    //kfork((int)kbd_init, 1);
 
     // allow KBD interrupts
     VIC_INTENABLE |= (1 << 31); // allow VIC IRQ31
@@ -76,8 +79,10 @@ int main()
     SIC_PICENSET = 1 << 3; // KBD int=3 on SIC
 
     kprintf("Welcome to BERRNIX in Arm\n");
+    
     init();
     kfork((int)body, 1);
+    
     printf("P0 switch to P1\n");
     while (1)
     {

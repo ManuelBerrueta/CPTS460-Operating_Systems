@@ -9,11 +9,14 @@
 #include "keymap"
 #include "keymap2"
 
-typedef struct kbd
+extern int ksleep(int event);
+extern int kwakeup(int event);
+
+typedef struct kbd                  // base = 0x10006000
 {
-    char *base;
-    char buf[128];
-    int head, tail, data, room;
+    char *base;                     // base address of KBD, as char *
+    char buf[128];                  // Input Buffer
+    int head, tail, data, room;     // control variables
 } KBD;
 
 KBD kbd;
@@ -22,7 +25,6 @@ int keyset;
 int shiftKey = 0;
 int ctrlKey = 0;
 int ctrl_c = 0;
-
 
 int kbd_init()
 {
@@ -40,13 +42,14 @@ int kbd_init()
     release = 0;
 
     printf("Detect KBD scan code: press the ENTER key : ");
-    while ((*(kp->base + KSTAT) & 0x10) == 0)
-        ;
+    while ((*(kp->base + KSTAT) & 0x10) == 0);
     scode = *(kp->base + KDATA);
     printf("scode=%x ", scode);
     if (scode == 0x5A)
         keyset = 2;
     printf("keyset=%d\n", keyset);
+
+    kp->data = 0;
 }
 
 
@@ -74,6 +77,7 @@ void kbd_handler1()
 
 
 // kbd_handelr2() for scan code set 2
+// Modified to use sleep and wakeup
 void kbd_handler2()
 {
     u8 scode, c;
@@ -93,6 +97,12 @@ void kbd_handler2()
         release = 0;
         return;
     }
+
+/*     if (kp->data == 128) // If the input buffer is full
+    {
+        printf("=====> Input buffer full\n========> Stand By\n\r");
+        return;             // Ignore current key
+    } */
 
     //* Check scan scodes:
     //Left Control Key check
@@ -149,7 +159,7 @@ void kbd_handler2()
         return;
     }
 
-    if (shiftKey)
+    if (shiftKey)               // Map scan scode to ASCII using keymap2
     {
         c = utab[scode];
     }
@@ -164,10 +174,14 @@ void kbd_handler2()
     //c = ltab[scode];
     printf("%c", c);
 
-    kp->buf[kp->head++] = c;
+    kp->buf[kp->head++] = c;    // Add key to Circular buffer[]
     kp->head %= 128;
     kp->data++;
     kp->room--;
+    
+
+    //kwakeup(&kp->data);      // wake up sleeping process
+    //printf("Wakeup kgetc\n");
 }
 
 /* //ORIGINAL kbd_handler2()
@@ -207,6 +221,37 @@ void kbd_handler()
 }
 
 
+//* Modified kgetc() using sleep
+/* int kgetc()
+{
+    char c;
+    KBD *kp = &kbd;
+
+    //unlock();
+    while(1)
+    {
+        lock();                 // Disable IRQ Interrupts
+        if (kp->data == 0)      // Check data with IRQ Disabled
+        {
+            unlock();           // Enable IRQ interrupts
+            //ksleep(&kp->data);   // Sleep for data
+            printf("kgetc going to sleep\n");
+            ksleep(&kp->data);   // Sleep for data
+        }
+    }
+
+    //lock();
+    c = kp->buf[kp->tail++];    // Get a char and update tail index
+    kp->tail %= 128;
+    kp->data--;
+    kp->room++;
+    unlock();
+
+    return c;
+} */
+
+
+// Originnal with no sleep *& wakeup
 int kgetc()
 {
     char c;
