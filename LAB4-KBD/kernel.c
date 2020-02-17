@@ -1,8 +1,7 @@
 // kernel.c file
 
 #define NPROC 9
-PROC proc[NPROC], *running, *freeList, *readyQueue;
-PROC *sleepList;
+PROC proc[NPROC], *running, *freeList, *readyQueue, *sleepList;
 int procsize = sizeof(PROC);
 
 int body();
