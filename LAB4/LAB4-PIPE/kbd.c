@@ -229,19 +229,24 @@ void kbd_handler()
     KBD *kp = &kbd;
 
     //unlock();
-    while(1)
+    //while(1)
+    //{
+    //    lock();                 // Disable IRQ Interrupts
+    //    if (kp->data == 0)      // Check data with IRQ Disabled
+    //    {
+    //        unlock();           // Enable IRQ interrupts
+    //        //ksleep(&kp->data);   // Sleep for data
+    //        printf("kgetc going to sleep\n");
+    //        ksleep(&kp->data);   // Sleep for data
+    //    }
+    //    break;
+    //}
+    while(kp->data == 0)
     {
-        lock();                 // Disable IRQ Interrupts
-        if (kp->data == 0)      // Check data with IRQ Disabled
-        {
-            unlock();           // Enable IRQ interrupts
-            //ksleep(&kp->data);   // Sleep for data
-            printf("kgetc going to sleep\n");
-            ksleep(&kp->data);   // Sleep for data
-        }
+        ksleep(&kp->data);
     }
 
-    //lock();
+    lock();
     c = kp->buf[kp->tail++];    // Get a char and update tail index
     kp->tail %= 128;
     kp->data--;

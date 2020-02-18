@@ -62,24 +62,64 @@ void IRQ_handler()
     }
 }
 
+int piping_test()
+{
+    pipe_init();
+
+    kpipe = create_pipe();
+
+    printf("PIPING TEST - PID %d\n", running->pid);
+    //! For PIPE TESTING:
+
+    color=PURPLE;
+    kprintf("P%d kfork tasks: \n",running->pid);
+    color=YELLOW;
+
+    kfork((int)pipe_writer, 1);                //! Uncomment/comment for pipe testing
+    kfork((int)pipe_reader, 1);                //! Uncomment/comment for pipe testing
+    color=WHITE;
+    printQ(readyQueue);                   //! Requires new queue.c from pipe.tgz
+    color=WHITE;
+
+    unlock();
+    while (1)
+    {
+        if (readyQueue)
+            tswitch();
+    }
+
+    //! PIPE Testing Code end - Anything below can be commented out for pipe test
+}
+
 int pipe_writer()
 {
     char c, *cp;
     struct uart *up = &uart[0];
     char line[128];
-    int i;
+    int i = 0;
 
-    while(1)
+    kpipe->nwriter++;
+
+    if (kpipe->busy == 0)
     {
-        uprintf("Enter a line for task1 to get : ");
-        ugets(up, line);
-        uprints(up, "\r\n");
+        printf("Broken PIPE!\n");
+        return -1;
+    }
+
+    while(i < 2)
+    {
+        printf("Enter a line for task1 to get : ");
+        kgets(line);
+        printf("\r\n");
         printf("proc%d writes %d line=[%s] to pipe %d\n", running->pid, i, line);
         write_pipe(kpipe, line, strlen(line));
+        i++;
+        //kswitch();
     }
-    //kpipe->nwriter--;
-    //uprintf("pipe writer proc %d exit\n", running->pid);
-    //kexit();
+    kpipe->nwriter--;
+    printf("pipe writer proc %d exit\n", running->pid);
+    kpipe->busy = 0;
+    kexit();
 }
 
 int pipe_reader()
@@ -88,19 +128,30 @@ int pipe_reader()
     char line[128];
     int i, j, n;
 
+    kpipe->nreader++;
+
     for (i = 0; i < 2; i++)
     {
-        printf("proc%d read from pipe %d\n", running->pid, i);
         n = read_pipe(kpipe, line, 20);
+
+        if (n == 0)
+        {
+            printf("Read 0 Data\nPossible broken pipe\n");
+            break;
+        }
+
+        printf("proc%d read from pipe %d\n", running->pid, i);
+
         printf("proc%d read n=%d bytes from pipe : [", running->pid, n);
         for (j = 0; j < n; j++)
         {
             kputc(line[j]);
         }
-        kprintf("]\n");
+        printf("]\n");
     }
     printf("pipe reader proc%d exit\n", running->pid);
     kpipe->nreader--;
+    kpipe->busy = 0;
     kexit();
 }
 
@@ -126,7 +177,7 @@ int main()
     VIC_INTENABLE |= (1 << 31); // allow VIC IRQ31
 
     // enable KBD IRQ
-    //SIC_INTENABLE = (1<<3); // KBD int=bit3 on SIC //!This one is from pipe.tgz
+    SIC_INTENABLE = (1<<3); // KBD int=bit3 on SIC //!This one is from pipe.tgz
     SIC_ENSET = 1 << 3;    // KBD int=3 on SIC
     SIC_PICENSET = 1 << 3; // KBD int=3 on SIC
 
@@ -136,44 +187,22 @@ int main()
 
     uart_init();
 
-    pipe_init();
-
-    kpipe = create_pipe();
-
-
-    //! For PIPE TESTING:
-
-/*     color=PURPLE;
-    kprintf("P%d kfork tasks: \n",running->pid);
-    color=YELLOW;
-
-    kfork((int)pipe_writer, 1);                //! Uncomment/comment for pipe testing
-    kfork((int)pipe_reader, 1);                //! Uncomment/comment for pipe testing
-    color=WHITE;
-    printQ(readyQueue);                   //! Requires new queue.c from pipe.tgz
-    color=WHITE;
-
-    unlock();
-    while (1)
-    {
-        if (readyQueue)
-            tswitch();
-    } */
-
-    //! PIPE Testing Code end - Anything below can be commented out for pipe test
-
-
     color=CYAN;
-    kfork((int)body, 1);
+    //kfork((int)body, 1);
+    kfork((int)piping_test, 1);
     color = WHITE;
 
     unlock();
+
     color=RED;
     printf("P%d switch to P1\n", running->pid);
     color=WHITE;
     while(1)                                //! Probably not due to kforks above
     {
         if (readyQueue)
+        {
+
             tswitch();
+        }
     }
 }
