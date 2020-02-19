@@ -173,6 +173,10 @@ void kbd_handler2()
     //kgets(kbd_temp);
     
     //c = ltab[scode];
+    if (c == '\r')
+    {
+        kputc('\n');
+    }
     printf("%c", c);
 
     kp->buf[kp->head++] = c;    // Add key to Circular buffer[]
@@ -181,7 +185,7 @@ void kbd_handler2()
     kp->room--;
     
 
-    kwakeup(&kp->data);      // wake up sleeping process
+    kwakeup((int)&(kp->data));      // wake up sleeping process
     //printf("Wakeup kgetc\n");
 }
 
@@ -229,7 +233,7 @@ int kgetc()
     KBD *kp = &kbd;
 
     //unlock();
-/*     while(1)
+    while(1)
     {
         lock();                 // Disable IRQ Interrupts
         if (kp->data == 0)      // Check data with IRQ Disabled
@@ -237,16 +241,14 @@ int kgetc()
             unlock();           // Enable IRQ interrupts
             //ksleep(&kp->data);   // Sleep for data
             printf("kgetc going to sleep\n");
-            ksleep(&kp->data);   // Sleep for data
+            ksleep((int)&(kp->data));   // Sleep for data
         }
-        break;
-    } */
-    while(kp->data == 0)
-    {
-        ksleep(&kp->data);
+        else
+        {
+            break;
+        }   
     }
-
-    lock();
+    //lock();
     c = kp->buf[kp->tail++];    // Get a char and update tail index
     kp->tail %= 128;
     kp->data--;
