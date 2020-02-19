@@ -36,6 +36,8 @@ int pipe_init()
     for (i = 0; i < NPIPE; i++)
     {
         pipe[i].busy = 0;
+        pipe[i].nwriter = 0;
+        pipe[i].nreader = 0;
     }
 }
 
@@ -67,12 +69,14 @@ int read_pipe(PIPE *p, char *buf, int n)
 {
     int r = 0;
 
-    if (p == 0 || p->busy == 0)
+    if (n <=0 || p->nwriter <=0) //Check for no writer
     {
-        printf("Broken PIPE!\n");
-        return 0;
+        p->nreader--; // decrement this reader that was created
+        //kwakeup((int)&p->room);
+        kwakeup((int)&p->data);
+        kexit(running->pid); //kill this process
+        return -1;
     }
-
 
     while (n)
     {
@@ -92,14 +96,23 @@ int read_pipe(PIPE *p, char *buf, int n)
         kwakeup((int)&p->room);
 
         if (r)
-            return r;
-
-/*         if(p->nwriter <= 0)
         {
-            printf("Broken PIPE!\n");
+            return r;
+        }
+
+/*         if(p->nwriter > 0)
+        {
+            //printf("Broken PIPE!\n");
+            kwakeup((int)&p->room);
+            ksleep((int)&p->data);  
             return 0;
 
         } */
+
+        if(!p->nwriter)
+        {
+            return -1;
+        }
         ksleep((int)&p->data);
     }
 }
@@ -110,11 +123,14 @@ int write_pipe(PIPE *p, char *buf, int n)
     int r = 0;
     int w = 0;
 
-    if (p == 0 || p->busy == 0)
+    if (p->nreader <= 0)
     {
+        p->nwriter--; //Decrement writer
         printf("Broken PIPE!\n");
-        return 0;
+        kexit(running->pid); //Exit with the pid number of the writer
+        return -1;
     }
+
 
     while (n)
     {
@@ -137,6 +153,7 @@ int write_pipe(PIPE *p, char *buf, int n)
         if (n == 0)
         {
             printf("proc%d finished writing %d bytes\n", running->pid, r);
+            kwakeup((int)&p->data);
             return r;
         }
         

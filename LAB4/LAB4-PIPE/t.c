@@ -62,6 +62,78 @@ void IRQ_handler()
     }
 }
 
+
+int pipe_writer()
+{
+    char c, *cp;
+    struct uart *up = &uart[0];
+    char line[128];
+    int i = 0;
+    int r =0;
+
+    kpipe->nwriter++;
+
+    if (kpipe->busy == 0)
+    {
+        printf("Broken PIPE!\n");
+        return -1;
+    }
+
+    //while(1)
+    while(i < 2)
+    {
+        printf("Enter a line for task1 to get : ");
+        kgets(line);
+        printf("\r\n");
+        printf("proc%d writes %d line=[%s] to pipe %d\n", running->pid, i, line);
+        r = write_pipe(kpipe, line, strlen(line));
+        i++;
+        //kswitch();
+    }
+    kpipe->nwriter--;
+    printf("pipe writer proc %d exit\n", running->pid);
+    //kpipe->busy = 0;
+    //kwakeup((int)&kpipe->data);
+    kexit();
+}
+
+int pipe_reader()
+{
+    char c, *cp;
+    char line[128];
+    int i, j, n;
+
+    kpipe->nreader++;
+
+
+
+    for (i = 0; i < 2; i++)
+    {
+        n = read_pipe(kpipe, line, 20);
+
+        if (n == 0)
+        {
+            printf("Read 0 Data\nPossible broken pipe\n");
+            break;
+        }
+
+        printf("proc%d read from pipe %d\n", running->pid, i);
+
+        printf("proc%d read n=%d bytes from pipe : [", running->pid, n);
+        for (j = 0; j < n; j++)
+        {
+            kputc(line[j]);
+        }
+        printf("]\n");
+    }
+    printf("pipe reader proc%d exit\n", running->pid);
+    kpipe->nreader--;
+    //kpipe->busy = 0;
+
+    kexit();
+}
+
+
 int piping_test()
 {
     pipe_init();
@@ -89,70 +161,6 @@ int piping_test()
     }
 
     //! PIPE Testing Code end - Anything below can be commented out for pipe test
-}
-
-int pipe_writer()
-{
-    char c, *cp;
-    struct uart *up = &uart[0];
-    char line[128];
-    int i = 0;
-
-    kpipe->nwriter++;
-
-    if (kpipe->busy == 0)
-    {
-        printf("Broken PIPE!\n");
-        return -1;
-    }
-
-    while(i < 2)
-    {
-        printf("Enter a line for task1 to get : ");
-        kgets(line);
-        printf("\r\n");
-        printf("proc%d writes %d line=[%s] to pipe %d\n", running->pid, i, line);
-        write_pipe(kpipe, line, strlen(line));
-        i++;
-        //kswitch();
-    }
-    kpipe->nwriter--;
-    printf("pipe writer proc %d exit\n", running->pid);
-    kpipe->busy = 0;
-    kexit();
-}
-
-int pipe_reader()
-{
-    char c, *cp;
-    char line[128];
-    int i, j, n;
-
-    kpipe->nreader++;
-
-    for (i = 0; i < 2; i++)
-    {
-        n = read_pipe(kpipe, line, 20);
-
-        if (n == 0)
-        {
-            printf("Read 0 Data\nPossible broken pipe\n");
-            break;
-        }
-
-        printf("proc%d read from pipe %d\n", running->pid, i);
-
-        printf("proc%d read n=%d bytes from pipe : [", running->pid, n);
-        for (j = 0; j < n; j++)
-        {
-            kputc(line[j]);
-        }
-        printf("]\n");
-    }
-    printf("pipe reader proc%d exit\n", running->pid);
-    kpipe->nreader--;
-    kpipe->busy = 0;
-    kexit();
 }
 
 int main()
