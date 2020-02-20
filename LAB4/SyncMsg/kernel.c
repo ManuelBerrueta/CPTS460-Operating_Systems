@@ -9,6 +9,11 @@ extern PIPE *kpipe;                             //! gives error, in t.c need to 
 PROC proc[NPROC], *running, *freeList, *readyQueue, *sleepList;
 int procsize = sizeof(PROC);
 
+//For message.c
+#define NMBUF 10
+struct semaphore nmbuf, mlock;
+MBUF mbuf[NMBUF], *mbufList, *mreadyQueue;         // mbufs buffers and mbufList
+
 int body();
 
 
@@ -37,6 +42,34 @@ int init()
 
     kprintf("running = %d\n", running->pid);
     printList("freeList", freeList);
+}
+
+int semaphore_init()
+{
+    int i, j;
+    MBUF *p;
+    kprintf("semaphore_init()\n");
+    for (i = 0; i < NMBUF; i++)
+    {
+        p = &mbuf[i];
+        p->pid = i;
+        p->priority = READY;
+        //p->contents = "\0";
+        p->next = p + 1;
+    }
+    mbuf[NMBUF - 1].next = 0; // circular proc list
+
+    //freeList = &proc[0];
+    mreadyQueue = 0;
+    //sleepList = 0;
+
+    //p = dequeue(&freeList);
+    //p->priority = 0;
+    //p->ppid = 0;
+    //running = p;
+
+    //kprintf("running = %d\n", running->pid);
+    //printList("freeList", freeList);
 }
 
 

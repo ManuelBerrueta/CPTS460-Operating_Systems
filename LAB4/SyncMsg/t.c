@@ -173,9 +173,12 @@ int sender() // send task code
     char line[128];
     while (1)
     {
-        ugets(up, line);
+        //ugets(up, line);
+        printf("Enter message::> ");
+        kgets(line);
         printf("task%d got a line=%s\n", running->pid, line);
-        send(line, 4);
+        //send(line, 4);
+        send(line, running->pid);
         printf("task%d send %s to pid=4\n", running->pid, line);
     }
 }
@@ -230,9 +233,12 @@ int main()
     //kfork((int)piping_test, 1);
     //color = WHITE;
 
-    unlock();
+    //unlock();
 
     msg_init();
+
+    semaphore_init();
+
     kprintf("P0 kfork tasks\n");
     kfork((int)sender, 1);   // sender process
     kfork((int)receiver, 1); // receiver process
