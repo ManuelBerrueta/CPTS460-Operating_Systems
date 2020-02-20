@@ -137,6 +137,7 @@ int pipe_reader()
 int piping_test()
 {
     pipe_init();
+    //kfork((int)pipe_init, 1);
 
     kpipe = create_pipe();
 
@@ -152,6 +153,7 @@ int piping_test()
     color=WHITE;
     printQ(readyQueue);                   //! Requires new queue.c from pipe.tgz
     color=WHITE;
+    kfork((int)body, 1);
 
     unlock();
     while (1)

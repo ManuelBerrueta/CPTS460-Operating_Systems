@@ -69,7 +69,7 @@ int read_pipe(PIPE *p, char *buf, int n)
 {
     int r = 0;
 
-    if (n <=0 || p->nwriter <=0) //Check for no writer
+    if (n <= 0) // || p->nwriter <=0) //Check for no writer
     {
         p->nreader--; // decrement this reader that was created
         //kwakeup((int)&p->room);
@@ -113,6 +113,8 @@ int read_pipe(PIPE *p, char *buf, int n)
         {
             return -1;
         }
+
+        //kwakeup((int)&p->room);
         ksleep((int)&p->data);
     }
 }
