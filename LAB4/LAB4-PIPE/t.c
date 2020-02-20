@@ -73,7 +73,13 @@ int pipe_writer()
 
     kpipe->nwriter++;
 
-    if (kpipe->busy == 0)
+/*     if (kpipe->busy == 0)
+    {
+        printf("Broken PIPE!\n");
+        return -1;
+    } */
+
+    if(kpipe->nreader == 0)
     {
         printf("Broken PIPE!\n");
         return -1;
@@ -126,11 +132,13 @@ int pipe_reader()
         }
         printf("]\n");
     }
+
+
     printf("pipe reader proc%d exit\n", running->pid);
     kpipe->nreader--;
     //kpipe->busy = 0;
 
-    kexit();
+    //kexit();
 }
 
 

@@ -178,8 +178,10 @@ int sender() // send task code
         kgets(line);
         printf("task%d got a line=%s\n", running->pid, line);
         //send(line, 4);
-        send(line, running->pid);
+        //send(line, running->pid);
+        send(line,2);
         printf("task%d send %s to pid=4\n", running->pid, line);
+        tswitch();
     }
 }
 

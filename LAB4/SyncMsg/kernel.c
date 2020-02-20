@@ -28,6 +28,11 @@ int init()
         p->pid = i;
         p->status = READY;
         p->next = p + 1;
+        p->mQueue = 0;
+        p->mQlock.value = 1;
+        p->mQlock.queue = 0;
+        p->nmsg.value = 0;
+        p->nmsg.queue = 0;
     }
     proc[NPROC - 1].next = 0; // circular proc list
 

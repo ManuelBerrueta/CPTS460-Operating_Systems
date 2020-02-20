@@ -57,7 +57,6 @@ void IRQ_handler()
         if (sicstatus & (1 << 3))
         {
             kbd_handler();
-            //kfork((int)kbd_handler, 1); // It's own process to go to sleep
         }
     }
 }

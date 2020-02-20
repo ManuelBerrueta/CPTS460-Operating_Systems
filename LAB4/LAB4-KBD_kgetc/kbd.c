@@ -233,7 +233,7 @@ int kgetc()
     KBD *kp = &kbd;
 
     //unlock();
-    while(1)
+/*     while(1)
     {
         lock();                 // Disable IRQ Interrupts
         if (kp->data == 0)      // Check data with IRQ Disabled
@@ -249,6 +249,15 @@ int kgetc()
         }   
     }
     //lock();
+     */
+
+    while(kp->data == 0)
+    {
+        ksleep((int)&kp->data);
+    }
+
+
+    lock();
     c = kp->buf[kp->tail++];    // Get a char and update tail index
     kp->tail %= 128;
     kp->data--;
