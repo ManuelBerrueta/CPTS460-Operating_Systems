@@ -167,9 +167,6 @@ int main()
 
     color=CYAN;
     kfork((int)body, 1);
-    //kfork((int)body, 1);
-    //kfork((int)piping_test, 1);
-
     color = WHITE;
 
     unlock();

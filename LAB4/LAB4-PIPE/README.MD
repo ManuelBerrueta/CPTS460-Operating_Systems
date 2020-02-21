@@ -1,1 +1,1 @@
-This folder is for kgetc wake and sleep
+This directory contains a working PIPE program that sends messages between two procesess via a PIPE.

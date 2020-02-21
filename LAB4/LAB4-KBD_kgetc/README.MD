@@ -1,1 +1,1 @@
-This folder is for kgetc wake and sleep
+This directory conatins a working kgetc using sleep.
