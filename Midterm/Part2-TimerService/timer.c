@@ -64,7 +64,8 @@ void timer_handler(int n)
     int i;
     TIMER *t = &timer[n];
     t->tick++; // Assume 120 ticks per second
-    if (t->tick == 120)
+    //if (t->tick == 120)
+    if (t->tick == 5) //! NOTE: Here is where you change the speed!
     {
         t->tick = 0;
         t->ss++;

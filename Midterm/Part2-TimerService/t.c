@@ -15,12 +15,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************/
 int color;
 
-#include "defines.h"
+#include "defines.h"            // LCD, TIMER, and UART addresses
 #include "type.h"
 #include "string.c"
 #include "queue.c"
-#include "vid.c"
-#include "kbd.c"
+#include "vid.c"                // LCD Driver
+#include "kbd.c"                // Kerboard Driver
 #include "exceptions.c"
 #include "pipe.c"
 #include "kernel.c"
@@ -35,6 +35,8 @@ PIPE *kpipe;
 int kprintf(char *fmt, ...);
 //int kputc(char);                      //! in pipe.tgz
 int body();
+void timer_handler();
+TIMER *tp[4];
 
 void copy_vectors(void)
 {
@@ -87,6 +89,7 @@ int main()
     kprintf("Welcome to BERRNIX in Arm\n");
     color = WHITE;
 
+
     kbd_init();
 
     // allow KBD interrupts
@@ -97,6 +100,15 @@ int main()
     SIC_INTENABLE = (1<<3); // KBD int=bit3 on SIC //!This one is from pipe.tgz
     SIC_ENSET = 1 << 3;    // KBD int=3 on SIC
     SIC_PICENSET = 1 << 3; // KBD int=3 on SIC
+
+    // enable VIC for timer interrupts
+    VIC_INTENABLE |= (1<<4); //timer0,1 at VIC.bit 4
+    
+    timer_init();
+    tp[0] = &timer[0];
+    timer_start(0);
+
+
 
     *(kp->base + KCNTL) = 0x12;                     //!From pipe.tgz
 
