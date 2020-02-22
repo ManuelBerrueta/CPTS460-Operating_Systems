@@ -55,7 +55,7 @@ int kfork(int func, int priority)           //! kfork is different in pipe.tgz
     }
     p->status = READY;
     p->priority = priority;
-    p->ppid = running->pid;
+    p->ppid = running->pid; //Parent pid
     p->parent = running;
     p->child = 0;
     p->sibling = 0;
@@ -132,6 +132,18 @@ int exitTime()
     kexit(tempExit);
 }
 
+int waitTime()
+{
+    int status = -1;
+    int pid = kwait(&status);
+    if(pid < 0)
+    {
+        printf("No Zombie Children!\n\n");
+    } else {
+        printf("\n\n====KWAIT: Proc[%d] Took her off ZombieChild[%d]\n\n", running->pid, pid);
+    }
+}
+
 
 int body()
 {
@@ -147,7 +159,7 @@ int body()
         printList("readyQueue", readyQueue);
         printsleepList(sleepList);
 
-        printf("Enter a command [sleep|wakeup|switch|kfork|exit] : ",
+        printf("Enter a command [sleep|wakeup|switch|kfork|wait|exit] : ",
                running->pid);
         kgets(cmd);
 
@@ -166,6 +178,10 @@ int body()
         else if (strcmp(cmd, "wakeup") == 0)
         {
             wakeupTime();
+        }
+        else if (strcmp(cmd, "wait") == 0)
+        {
+            waitTime();
         }
         else if (strcmp(cmd, "exit") == 0)
         {

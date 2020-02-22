@@ -116,3 +116,68 @@ int kwakeup(int event)
 
     return 0;
 }
+
+// Each kwait call handles only one Zombie Child!
+int kwait(int *status)
+{
+    // If calling process has no child
+    int zombiePID = -1;
+    int zombieExists = 0;
+    if (!running->child)
+    {
+        printf("\n====KWAIT: This Proc has no children!\n");
+        return -1;
+    }
+    
+    while (1)
+    {
+        //! At this point we only know that the current proc has children:
+        //! If there exist a child, then there is 3 cases for a Possible zombie Child
+        //!     * The running->child is the zombie child
+        //!     * One of the siblings is the Zombie child
+        //!         * In this case we have to keep track on the previous child
+        //!           to be able to link to the next sibling of the zombie child
+        //!     * None of them are zombie child
+
+        PROC *possibleZombie = running->child;
+        PROC *previousChild = 0; //Have to keep track of prior child
+        
+        // First case where the running->child is a Zombie
+        if(possibleZombie->status == ZOMBIE)
+        {
+            zombieExists = 1;
+        } else {
+            
+            // Else we look for a possible Zombie Child through siblings
+            while(possibleZombie->sibling)
+            {
+                previousChild = possibleZombie; //Save previous for linking
+                possibleZombie = possibleZombie->sibling;
+                if (possibleZombie->status == ZOMBIE)
+                {
+                    zombieExists = 1;
+                    break;
+                }
+            }
+        }
+        // Now we can check if zombieExists and also if there is a previous child
+        // If this is the case then we must link the previous child with the
+        // the possibleZombie which is a realy Zombie child's siblings
+        if (previousChild && zombieExists)
+        {
+            previousChild->sibling = possibleZombie->sibling;
+            possibleZombie->sibling = 0; //Clear out this proc for next round
+        } else if (zombieExists) {
+            zombiePID = possibleZombie->pid;
+            // We must return the exit code of the zombie child via *status
+            *status = possibleZombie->exitCode;
+            // We must clear the status for next time it runs
+            possibleZombie->status = FREE;
+            // Enqueue zombie child back in to the free process list to be used again
+            enqueue(&freeList, possibleZombie);
+            return(zombiePID);
+        }
+        ksleep(running);
+        //tswitch();
+    }
+}
