@@ -22,13 +22,12 @@ int init()
         p = &proc[i];
         p->pid = i;
         p->status = READY;
+        //p->status = FREE;
         p->next = p + 1;
     }
     p->parent = p;
     p->child = 0;
     p->sibling = 0;
-
-
     proc[NPROC - 1].next = 0; // circular proc list
 
     freeList = &proc[0];
@@ -61,7 +60,8 @@ int kfork(int func, int priority)           //! kfork is different in pipe.tgz
     p->child = 0;
     p->sibling = 0;
 
-    treeEnqueue(p, priority);
+    //treeEnqueue(p, priority);
+    treeEnqueue(running, p);
 
     // set kstack for new proc to resume to func()
     // stack = r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r14

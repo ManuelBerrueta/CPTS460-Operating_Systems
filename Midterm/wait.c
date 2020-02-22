@@ -5,7 +5,7 @@ extern PROC *sleepList;
 
 
 
-// Helper function to verify P1's children
+/* // Helper function to verify P1's children
 int printP1Children(PROC *P1)
 {
     if (P1->child != 0)
@@ -20,7 +20,7 @@ int printP1Children(PROC *P1)
         }
         printf(" NULL \n");
     }
-}
+} */
 
 int kexit(int exitValue) // SIMPLE kexit() for process to terminate
 {
@@ -40,7 +40,9 @@ int kexit(int exitValue) // SIMPLE kexit() for process to terminate
     if (running->child)
     {
         treeEnqueue(&proc[1], running->child);
-        printP1Children(&proc[1]);
+        //printP1Children(&proc[1]);
+        printf("P1 Children:\n===>");
+        printQueue(&proc[1]);
         running->child = 0;
         kwakeup(&proc[1]);
     }
