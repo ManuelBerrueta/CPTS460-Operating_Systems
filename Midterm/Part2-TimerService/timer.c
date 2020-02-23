@@ -67,6 +67,40 @@ void timer_handler(int n)
     //if (t->tick == 120)
     if (t->tick == 5) //! NOTE: Here is where you change the speed!
     {
+        printf("At every second Here we decremnt Queue\n");
+        //TODO: it may be possible to do all of the code here?
+        //! if value of a proc in the queue is 0, then put back in readyQueue
+
+        if (sleepList)
+        {
+            //must check value
+            //TODO: Here is just decrement the head->priority:
+            //TODO:     if the head ->priority == 0;
+            //TODO:         dequeue  by PROC *p = dequeue
+            // ! or may be just use wakeup since wakeup dequeue](& wakeup proc by kwakeup()
+            sleepList->priority--;
+            
+            if (sleepList->priority <= 0)
+            {
+                //timerDequeue
+                //This should wakeup the process as well
+                //PROC *timeOut = timerDequeue();
+                // also add to readyQueue
+                PROC *timeOutProc = dequeue(&sleepList);
+                
+                kwakeup(&timeOutProc->pid);
+                printf("\n\n Woke up Proc %d", timeOutProc->pid);
+            }    
+            // I can probably use a modified printlist to show the time
+            //TODO: Print timerqueue
+            printTQE(sleepList);
+        }
+        else
+        {
+            printf("\n\nTimerQueue is empty\n\n");
+        }
+        
+        
         t->tick = 0;
         t->ss++;
         if (t->ss == 60)

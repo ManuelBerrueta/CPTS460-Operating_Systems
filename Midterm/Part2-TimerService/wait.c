@@ -2,6 +2,7 @@
 
 extern PROC *running;
 extern PROC *sleepList;
+//extern PROC *timerQueue;
 
 
 
@@ -56,6 +57,30 @@ int kexit(int exitValue) // SIMPLE kexit() for process to terminate
 }
 
 
+
+int timerSleep(int event)
+{
+    int SR = int_off();         // Disable IRQ Interrupts and return CPSR
+                                // Current Program Status Register (CPSR)
+    running->event = event;     // Record the event value in the Proc
+    running->status = SLEEP;    // Change Running Proc to SLEEP == 2 status
+
+    printf("\nGo to Sleep PROC[%d] | EVENT: %d\n ", running->pid, running->event);
+
+    //enqueue(&sleepList, running);
+    timerEnqueue(&sleepList, running);
+
+
+    //printList("SleepList = ", sleepList);
+
+    tswitch();                  // Switch Process
+
+    int_on(SR);                 // Restore original CPSR 
+}
+
+
+
+
 //! In sleep() and wakeup() we disable interrupts because each operation must be
 //! atomic, that is the operation must be carried out throughout before any
 //! other operation, such as an interrupt can be handled.
@@ -71,6 +96,7 @@ int ksleep(int event)
     printf("\nGo to Sleep PROC[%d] | EVENT: %d\n ", running->pid, running->event);
 
     enqueue(&sleepList, running);
+
 
     printList("SleepList = ", sleepList);
 

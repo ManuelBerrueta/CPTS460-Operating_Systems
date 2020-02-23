@@ -25,8 +25,8 @@ int color;
 #include "pipe.c"
 #include "kernel.c"
 #include "wait.c"
-#include "uart.c"
 #include "timer.c"
+#include "uart.c"
 
 //char *tab = "0123456789ABCDEF";
 
@@ -35,6 +35,7 @@ PIPE *kpipe;
 int kprintf(char *fmt, ...);
 //int kputc(char);                      //! in pipe.tgz
 int body();
+int time_test();                        // TimerQueue Test Program
 void timer_handler();
 TIMER *tp[4];
 
@@ -72,6 +73,8 @@ void IRQ_handler()
         }
     }
 }
+
+
 
 
 int main()
@@ -117,7 +120,10 @@ int main()
     uart_init();
 
     color=CYAN;
-    kfork((int)body, 1);
+    
+    //kfork((int)body, 1);
+    //kfork((int)time_test, 1);
+    time_test();                                //! Execute Time Test Program
 
 
     color = WHITE;

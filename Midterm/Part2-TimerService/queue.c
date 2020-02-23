@@ -57,6 +57,67 @@ treeEnqueue(PROC *parent, PROC *inChild)
     }
 }
 
+
+int timerEnqueue(PROC **queue, PROC *p) //! different thean pipe.tgz
+{
+    PROC *q = *queue;
+    PROC *decrementFromhere;
+    PROC *previous;
+
+    //Here is when the proc we are trying to put in time is < current head
+    // or the incoming proc priority is less then head priority
+    // then we make the incoming proc head and decrement any existing procs by that amount
+    if (q == 0 || p->priority < q->priority)
+    {
+        *queue = p;
+        p->next = q;
+        decrementFromhere = q;
+
+
+        //* We have to decrement the rest of the queue
+        while(q)
+        {
+            q->priority -= p->priority;
+            q = q->next;
+        }
+        return;
+    }
+    previous = q;
+    while (q->next && p->priority >= q->next->priority)
+    {
+        //TODO: Need to take care of thise case!!
+        //! each move we make we decrement our value by the current value
+        p->priority -= q->next->priority;
+        previous = q;
+        q = q->next;        
+    }
+    //Then here we have to decrement the by the time left over on p?
+    //previous->next = p;
+    int decrementValue = p->priority;
+    PROC *temp = q->next;
+    q->next = p;
+    p->next = temp;
+    decrementFromhere = temp;
+    while (decrementFromhere)
+    {
+        decrementFromhere->priority -= decrementValue;
+        //TODO: There may be a case where a proc here may go negative?
+    }    
+    //p->next = q->next;
+    //q->next = p;
+}
+
+int printTQE(PROC *p)
+{
+    printf("TimeQueue =");
+    while (p)
+    {
+        printf("[Proc[%d] RelativeTime= [%d]->", p->pid, p->priority);
+        p = p->next;
+    }
+    printf("NULL\n");
+}
+
 int enqueue(PROC **queue, PROC *p) //! different thean pipe.tgz
 {
     PROC *q = *queue;

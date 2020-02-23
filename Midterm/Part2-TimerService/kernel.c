@@ -6,7 +6,7 @@ extern int pipe_writer(), pipe_reader();
 extern PIPE *kpipe;                             //! gives error, in t.c need to sort out includes
 
 #define NPROC 9
-PROC proc[NPROC], *running, *freeList, *readyQueue, *sleepList;
+PROC proc[NPROC], *running, *freeList, *readyQueue, *sleepList, timerQueue;
 int procsize = sizeof(PROC);
 
 int body();
@@ -105,6 +105,7 @@ int sleepTime()
     
     tempEvent = atoi(inEvent);
     ksleep(tempEvent);
+    //TODO: need to make a copy of ksleep but using the algorithm to insert
 }
 
 
@@ -144,6 +145,29 @@ int waitTime()
     }
 }
 
+int t_command()
+{
+    char timeStr[10];
+    int in_time = 0;
+    printf("\nEnter time in seconds ::>");
+    kgets(timeStr);
+
+    in_time = atoi(timeStr);
+
+    running->priority = in_time;            //Usinsg priority as time in seconds for this exercise
+
+    ksleep(&running->pid);
+
+    // Process goes to sleep in it's time queue
+}
+
+int time_test()
+{
+    kfork((int)body, 1);
+    kfork((int)body, 1);
+    kfork((int)body, 1);
+    kfork((int)body, 1);
+}
 
 int body()
 {
@@ -159,7 +183,7 @@ int body()
         printList("readyQueue", readyQueue);
         printsleepList(sleepList);
 
-        printf("Enter a command [sleep|wakeup|switch|kfork|wait|exit] : ",
+        printf("Enter a command [sleep|wakeup|switch|kfork|t|wait|exit] : ",
                running->pid);
         kgets(cmd);
 
@@ -182,6 +206,11 @@ int body()
         else if (strcmp(cmd, "wait") == 0)
         {
             waitTime();
+        }
+        else if (strcmp(cmd, "t") == 0)
+        {
+            //waitTime();
+            t_command();
         }
         else if (strcmp(cmd, "exit") == 0)
         {
