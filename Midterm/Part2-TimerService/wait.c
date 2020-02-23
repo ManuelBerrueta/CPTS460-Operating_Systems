@@ -79,6 +79,49 @@ int timerSleep(int event)
 }
 
 
+int timerWakeup(int event)
+{
+    PROC *eachProc;
+    PROC *tempSleepList = 0;
+    //PROC *timerQ = 0;
+
+    int SR = int_off();         // Disable IRQ Interrupts and return CPSR
+                                // Current Program Status Register (CPSR)
+    
+    //* Iterate through the sleepList by dequeue, while the pointer is not null.
+    //* We check to see if that pointer matches our event. If it matches, then
+    //* we change its status to ready and we enqueue it into our readyQueue,
+    //* thus waking up the process.
+    //* Else we enqueue the proc back to our temporary sleepList.
+    //* When we are done iterating through the sleepList, we set the original
+    //* sleepList to point to our new tempSleepList.
+    
+    while (eachProc = dequeue(&sleepList))
+    {
+        if (eachProc->event == event)
+        {
+            printf("\nFound PROC[%d] matching EVENT: %d\n\t |-> WOKE UP PROC[%d]\n", eachProc->pid, event, eachProc->pid);
+            //printf("Wakeup Proc: %d\n", eachProc->pid);
+            eachProc->status = READY;       // READY == 1
+            
+            
+            enqueue(&readyQueue, eachProc);
+        }
+        else
+        {
+            //TODO: We need a new enqueue that just inserts in order that they came out.
+            //enqueue(&tempSleepList, eachProc);
+            inOrderTimerRequeue(&tempSleepList, eachProc);
+        }
+    }
+    sleepList = tempSleepList;   
+    
+    int_on(SR);
+
+    return 0;
+}
+
+
 
 
 //! In sleep() and wakeup() we disable interrupts because each operation must be

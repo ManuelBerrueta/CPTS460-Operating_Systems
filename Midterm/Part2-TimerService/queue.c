@@ -113,6 +113,22 @@ int timerEnqueue(PROC **queue, PROC *p) //! different thean pipe.tgz
     //q->next = p;
 }
 
+int inOrderTimerRequeue(PROC **queue, PROC *p)
+{
+    PROC *q = *queue;
+    if(q == 0)
+    {
+        *queue = p;
+        p->next=q;
+        return;
+    }
+    while(q->next)
+    {
+        q = q->next;
+    }
+    q->next = p;
+}
+
 int printTQE(PROC *p)
 {
     printf("TimeQueue =");

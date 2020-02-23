@@ -88,7 +88,8 @@ void timer_handler(int n)
                 // also add to readyQueue
                 PROC *timeOutProc = dequeue(&sleepList);
                 
-                kwakeup(&timeOutProc->pid);
+                //kwakeup(&timeOutProc->pid);
+                timerWakeup(&timeOutProc->pid);
                 printf("\n\n Woke up Proc %d", timeOutProc->pid);
 
                 //TODO: Possibly kfork body if sleepList is empty after dequeue
