@@ -73,13 +73,15 @@ int timerEnqueue(PROC **queue, PROC *p) //! different thean pipe.tgz
         p->next = q;
         decrementFromhere = q;
 
+        q->priority -= p->priority;
 
-        //* We have to decrement the rest of the queue
-        while(q)
+        //* We have to decrement the rest of the queue, Not True
+        //* We only have to decrement the next over!
+/*         while(q)
         {
             q->priority -= p->priority;
             q = q->next;
-        }
+        } */
         return;
     }
     previous = q;
@@ -98,11 +100,15 @@ int timerEnqueue(PROC **queue, PROC *p) //! different thean pipe.tgz
     q->next = p;
     p->next = temp;
     decrementFromhere = temp;
-    while (decrementFromhere)
+    //! Should only need to decrement the next over
+    decrementFromhere->priority -= decrementValue;
+
+    //! This following loop will decrement each one, not what we need!
+/*     while (decrementFromhere)
     {
         decrementFromhere->priority -= decrementValue;
         //TODO: There may be a case where a proc here may go negative?
-    }    
+    }     */
     //p->next = q->next;
     //q->next = p;
 }
@@ -112,7 +118,7 @@ int printTQE(PROC *p)
     printf("TimeQueue =");
     while (p)
     {
-        printf("[Proc[%d] RelativeTime= [%d]->", p->pid, p->priority);
+        printf("[Proc[%d]|RTime[%d]->", p->pid, p->priority);
         p = p->next;
     }
     printf("NULL\n");

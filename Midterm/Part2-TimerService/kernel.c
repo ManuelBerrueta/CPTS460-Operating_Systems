@@ -156,7 +156,8 @@ int t_command()
 
     running->priority = in_time;            //Usinsg priority as time in seconds for this exercise
 
-    ksleep(&running->pid);
+    //ksleep(&running->pid);
+    timerSleep(&running->pid);
 
     // Process goes to sleep in it's time queue
 }

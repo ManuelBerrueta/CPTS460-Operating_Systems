@@ -74,9 +74,9 @@ void timer_handler(int n)
         if (sleepList)
         {
             //must check value
-            //TODO: Here is just decrement the head->priority:
-            //TODO:     if the head ->priority == 0;
-            //TODO:         dequeue  by PROC *p = dequeue
+            // Here is just decrement the head->priority:
+            //     if the head ->priority == 0;
+            //         dequeue  by PROC *p = dequeue
             // ! or may be just use wakeup since wakeup dequeue](& wakeup proc by kwakeup()
             sleepList->priority--;
             
@@ -90,9 +90,11 @@ void timer_handler(int n)
                 
                 kwakeup(&timeOutProc->pid);
                 printf("\n\n Woke up Proc %d", timeOutProc->pid);
+
+                //TODO: Possibly kfork body if sleepList is empty after dequeue
             }    
             // I can probably use a modified printlist to show the time
-            //TODO: Print timerqueue
+            //Print timerqueue
             printTQE(sleepList);
         }
         else
