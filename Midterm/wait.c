@@ -34,18 +34,21 @@ int kexit(int exitValue) // SIMPLE kexit() for process to terminate
     running->status = ZOMBIE;
     running->exitCode = exitValue;
 
-    // We must check this current proc for children,
+    // We must check if this current proc has children,
     // If it has children, they must become the children of P1
     // Else if no children, we wake up it's parent
     if (running->child)
     {
         treeEnqueue(&proc[1], running->child);
         //printP1Children(&proc[1]);
-        printf("P1 Children:\n===>");
-        printQueue(&proc[1]);
+        
+        //printf("P1 Children:\n===>");
+        //printQueue(&proc[1]);
+        printChildList(&proc[1]);
         running->child = 0;
         kwakeup(&proc[1]);
     }
+
 
     printf("Proc %d exit\n", running->pid);
     printf("Proc %d is Zombie Child of Proc %d\n", running->pid, running->parent->pid);
@@ -166,7 +169,8 @@ int kwait(int *status)
         if (previousChild && zombieExists)
         {
             previousChild->sibling = possibleZombie->sibling;
-            possibleZombie->sibling = 0; //Clear out this proc for next round
+            //TODO: This line below not sure, so I commented out
+            //possibleZombie->sibling = 0; //Clear out this proc for next round
         } else if (zombieExists) {
             zombiePID = possibleZombie->pid;
             // We must return the exit code of the zombie child via *status
@@ -174,10 +178,17 @@ int kwait(int *status)
             // We must clear the status for next time it runs
             possibleZombie->status = FREE;
             // Enqueue zombie child back in to the free process list to be used again
+
+            //TODO: Need to clearn out zombie from list 
+            //! need to double check this is right
+            running->child = possibleZombie->sibling;
+
             enqueue(&freeList, possibleZombie);
             return(zombiePID);
         }
         ksleep(running);
         //tswitch();
+
+        //TODO: We got a bug here in getting read of the zombie child
     }
 }

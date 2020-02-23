@@ -43,6 +43,9 @@ treeEnqueue(PROC *parent, PROC *inChild)
         //inChild->parent = parent; // Assign Parent as child's parent
         parent->child = inChild;            // Assign inChild as Parent's child
         parent->child->parent = parent;
+        
+        //NEW Line debugging 
+        //parent->child->ppid = parent->pid;
     } else {
         
         PROC *temp = parent->child; //This will be our temp child iterator
@@ -56,6 +59,41 @@ treeEnqueue(PROC *parent, PROC *inChild)
         temp->sibling->parent = parent;
     }
 }
+
+
+//! Print Child List
+int printChildList(PROC *p)
+{
+    PROC *temp = p;
+    char statusStr[10];
+    printf("Proc[%d] Child List:\n", p->pid);
+    if (temp->child)
+    {
+        if(temp->child->status == 1) //1 is ready, 4 is zombie
+        {
+            //TODO: Need to change status from int to a string of ZOMBIE or READY
+            strcpy(statusStr, "READY");
+        } else if (temp->child->status == 4)
+        {
+            strcpy(statusStr, "ZOMBIE");
+        }
+
+        printf("[%d, %s]->", temp->child->pid, statusStr);
+        //temp = temp->sibling;
+        temp = temp->child->sibling;
+        if(temp)
+        {
+            while (temp)
+            {
+                printf("[%d, READY]->", temp->pid);
+                temp = temp->sibling;
+            }
+        }
+    }
+    printf("NULL\n");
+}
+
+
 
 int enqueue(PROC **queue, PROC *p) //! different thean pipe.tgz
 {

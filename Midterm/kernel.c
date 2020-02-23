@@ -60,6 +60,9 @@ int kfork(int func, int priority)           //! kfork is different in pipe.tgz
     p->child = 0;
     p->sibling = 0;
 
+    //TODO: if it is p[1] then p0 is not it's child
+
+
     //treeEnqueue(p, priority);
     treeEnqueue(running, p);
 
@@ -76,7 +79,10 @@ int kfork(int func, int priority)           //! kfork is different in pipe.tgz
     enqueue(&readyQueue, p);
     
     printf("proc %d kforked a child %d\n", running->pid, p->pid);
-    printList("readyQueue", readyQueue);
+    //printList("readyQueue", readyQueue);
+    //printList("Proc[%d] Children:", p);
+    printChildList(running);
+
     return p->pid;
 }
 
@@ -140,8 +146,9 @@ int waitTime()
     {
         printf("No Zombie Children!\n\n");
     } else {
-        printf("\n\n====KWAIT: Proc[%d] Took her off ZombieChild[%d]\n\n", running->pid, pid);
+        printf("\n\n====KWAIT: Proc[%d] Took her of ZombieChild[%d]\n\n", running->pid, pid);
     }
+    printChildList(running);
 }
 
 
