@@ -14,8 +14,14 @@ SECTIONS
   .bss : { *(.bss) }
   . = ALIGN(8);
   . = . + 0x1000; /* 4kB of stack memory */
-  svc_stack = .;
+  svc_stack_top = .;
   . = . + 0x1000; /* 4kB of irq stack memory */
-  irq_stack = .;
+  irq_stack_top = .;
+  /* brand new code - Testing */
+  . = . + 0x1000; /* 4kB of abt stack memory */
+  und_stack_top = .;
+  . = . + 0x1000; /* 4kB of und stack memory */
+  abt_stack_top = .;
+  . = ALIGN(1024);
 }
 

@@ -6,7 +6,7 @@ int color;
 #include "kbd.c"                // Kerboard Driver
 #include "string.c"
 #include "queue.c"
-#include "uart.c"
+//#include "uart.c"
 #include "exceptions.c"
 //#include "pipe.c"
 //#include "kernel.c"
@@ -95,11 +95,11 @@ void irq_chandler()
         timer_handler(0); // timer0 only
     }
 
-    if (vicstatus & (1 << 12))
+/*     if (vicstatus & (1 << 12))
     {
         uart0_handler();
     }
-    
+     */
 
     if (vicstatus & (1 << 31))
     {
@@ -120,7 +120,7 @@ int main()
     //fbuf_init();
 
     kbd_init();
-    uart_init();
+    //uart_init();
 
 
     // allow KBD interrupts
@@ -151,6 +151,18 @@ int main()
     printf("test MMU protection: try to access VA = 0x20000000\n");
     p = (int *)0x20000000;
     *p = 123;
+
+/*     printf("test MM at VA=2MB\n");
+    p = (int *)(2*0x100000); *p = 123;
+    
+    printf("test MM at VA=127MB\n");
+    p = (int *)(127*0x100000); *p = 123;
+    
+    printf("test MM at VA=128MB\n");
+    *p = (int *)(128*0x100000); *p = 123;
+    
+    printf("test MM at VA=512MB\n");
+    *p = (int *)(512*0x100000); *p = 123; */
 
     while(1)                                //! Probably not due to kforks above
     {
