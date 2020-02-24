@@ -1,0 +1,9 @@
+arm-none-eabi-ld -T t.ld ts.o t.o -Ttext=0x10000 -o t.elf
+ts.o: In function `get_spsr':
+/home/manny`/CPTS460-Operating_Systems/Midterm/Part3-OneLevelMemPaging/ts.s:8: undefined reference to `svc_stack_top'
+/home/manny/CPTS460-Operating_Systems/Midterm/Part3-OneLevelMemPaging/ts.s:39: undefined reference to `abt_stack_top'
+/home/manny/CPTS460-Operating_Systems/Midterm/Part3-OneLevelMemPaging/ts.s:43: undefined reference to `und_stack_top'
+/home/manny/CPTS460-Operating_Systems/Midterm/Part3-OneLevelMemPaging/ts.s:47: undefined reference to `irq_stack_top'
+t.o: In function `kgetc':
+/home/manny/CPTS460-Operating_Systems/Midterm/Part3-OneLevelMemPaging/kbd.c:269: undefined reference to `lock'
+/home/manny/CPTS460-Operating_Systems/Midterm/Part3-OneLevelMemPaging/kbd.c:274: undefined reference to `unlock'

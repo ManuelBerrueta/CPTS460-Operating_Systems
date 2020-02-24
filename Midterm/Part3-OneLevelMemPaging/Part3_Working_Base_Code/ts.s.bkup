@@ -55,8 +55,7 @@ reset_handler:
 
 swi_handler:                                            // dummy swi_handler, not used yet
 
-//data_handler:
-data_abort_handler:
+data_handler:
     sub lr, lr, #4
     stmfd sp!, {r0-r12, lr}
     bl data_chandler                                    // call data_chandler() in C
@@ -71,17 +70,17 @@ irq_handler:
 
 
 // unlock/lock: mask in/out IRQ interrupts
-//unlock:
-//  MRS r4, cpsr
-//  BIC r4, r4, #0x80   // clear bit means UNMASK IRQ interrupt
-//  MSR cpsr, r4
-//  mov pc, lr	
-//
-//lock: 
-//  MRS r4, cpsr
-//  ORR r4, r4, #0x80   // set bit means MASK off IRQ interrupt 
-//  MSR cpsr, r4
-//  mov pc, lr
+unlock:
+  MRS r4, cpsr
+  BIC r4, r4, #0x80   // clear bit means UNMASK IRQ interrupt
+  MSR cpsr, r4
+  mov pc, lr	
+
+lock: 
+  MRS r4, cpsr
+  ORR r4, r4, #0x80   // set bit means MASK off IRQ interrupt 
+  MSR cpsr, r4
+  mov pc, lr
 	
 // int on(int cpsr): restore original cpsr from int_off()
 int_on: // restore CPSR from r0
