@@ -50,6 +50,33 @@ int mkptable() // build level-1 pgtable using 1 MB sections
         ptable[i] = pentry;
         pentry += 0x100000;
     }
+
+/*     printf("2. fill 130 entries of pgtable to ID map 130 MB VA to PA\n");
+    pentry = 0x412; // AP = 01,domain = 0000, CB = 00, type = 02 for section
+    for (i = 0; i < 130; i++)//* 130 MB (128 MB + 2 MB I/O)
+    { // 258 level-1 page table entries
+        //ptable[i] = pentry;
+        //pentry += 0x100000;
+
+        if ( i < 130)
+        {
+            ptable[i] = pentry;
+            pentry += 0x100000;
+        }
+        else
+        {
+            ptable[i] = 0x421;
+            pentry += 0x100000;
+        }
+    } */
+
+/*     while (i < 258)
+    {
+        ptable[i] = 0x411;
+        pentry += 0x100000;
+        i++;
+    } */
+
     printf("3. finished building level-1 page table\n");
     printf("4. return to set TTB, domain and enable MMU\n");
 }
@@ -154,17 +181,23 @@ int main()
     p = (int *)0x20000000;
     *p = 123;
 
-/*     printf("test MM at VA=2MB\n");
-    p = (int *)(2*0x100000); *p = 123;
     
-    printf("test MM at VA=127MB\n");
-    p = (int *)(127*0x100000); *p = 123;
+    /* printf("test MM at VA=2MB\n");
+    p = (int *)(2 * 0x100000);
+    *p = 123;
     
+    printf("test MM at VA=2MB\n");
+    p = (int *)(127 * 0x100000);
+    *p = 123;
+
     printf("test MM at VA=128MB\n");
-    *p = (int *)(128*0x100000); *p = 123;
+    p = (int *)(128 * 0x100000);
+    *p = 123;
+
+    printf("test MM at VA=128MB\n");
+    p = (int *)(512 * 0x100000);
+    *p = 123; */
     
-    printf("test MM at VA=512MB\n");
-    *p = (int *)(512*0x100000); *p = 123; */
 
     while(1)                                //! Probably not due to kforks above
     {
