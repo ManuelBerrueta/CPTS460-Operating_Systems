@@ -53,21 +53,25 @@ int mkptable() // build level-1 pgtable using 1 MB sections
 
     printf("2. fill 130 entries of pgtable to ID map 130 MB VA to PA\n");
     pentry = 0x412; // AP = 01,domain = 0000, CB = 00, type = 02 for section
-    /* for (i = 0; i < 130; i++)//* 130 MB (128 MB + 2 MB I/O)
+    for (i = 0; i < 258; i++)//* 130 MB (128 MB + 2 MB I/O)
     { // 130 level-1 page table entries
-        if ( i < 130)
+        if ( i < 128)
+        {
+            ptable[i] = pentry;
+        }
+        if (i > 255)
         {
             ptable[i] = pentry;
         }
         pentry += 0x100000;
-    } */
+    }
 
-    for (i = 0; i < 130; i++)//* 130 MB (128 MB + 2 MB I/O)
+/*     for (i = 0; i < 130; i++)//* 130 MB (128 MB + 2 MB I/O)
     { // 130 level-1 page table entries    
         ptable[i] = pentry;
         pentry += 0x100000;
     }
-
+ */
 
     printf("3. finished building level-1 page table\n");
     printf("4. return to set TTB, domain and enable MMU\n");
@@ -163,7 +167,7 @@ int main()
     tp[0] = &timer[0];
     timer_start(0);
 
-    printf("test MMU rpotection: try to access VA =  0x00200000\n");
+    /* printf("test MMU rpotection: try to access VA =  0x00200000\n");
     p = (int *)0x002000000;
     *p = 123;
     printf("test MMU protection: try to access VA = 0x02000000\n");
@@ -171,29 +175,35 @@ int main()
     *p = 123;
     printf("test MMU protection: try to access VA = 0x20000000\n");
     p = (int *)0x20000000;
-    *p = 123;
+    *p = 123; */
 
-    
-    /* printf("test MM at VA=2MB\n");
+    color=GREEN;
+    printf("\ntest MM at VA=2MB\n");
     p = (int *)(2 * 0x100000);
     *p = 123;
     
-    printf("test MM at VA=2MB\n");
+    color=CYAN;
+    printf("\ntest MM at VA=127MB\n");
     p = (int *)(127 * 0x100000);
     *p = 123;
 
-    printf("test MM at VA=128MB\n");
+    color=YELLOW;
+    printf("\ntest MM at VA=128MB\n");
     p = (int *)(128 * 0x100000);
     *p = 123;
 
-    printf("test MM at VA=128MB\n");
+
+    color=PURPLE;
+    printf("\ntest MM at VA=512MB\n");
     p = (int *)(512 * 0x100000);
-    *p = 123; */
-    
-   color=PURPLE;
+    *p = 123;
+
+    printf("\n");
+
+    color=WHITE;
     while(1)                                //! Probably not due to kforks above
     {
-        color=PURPLE;
+        color=WHITE;
         printf("main running Input a line: ");
         kgets(line);
         printf(" line = %s\n", line);
