@@ -43,39 +43,31 @@ int mkptable() // build level-1 pgtable using 1 MB sections
     { // zero out the pgtable
         ptable[i] = 0;
     }
-    printf("2. fill 258 entries of pgtable to ID map 258 MB VA to PA\n");
+    /* printf("2. fill 258 entries of pgtable to ID map 258 MB VA to PA\n");
     pentry = 0x412; // AP = 01,domain = 0000, CB = 00, type = 02 for section
     for (i = 0; i < 258; i++)//TODO: Make change here to 130 MB (128 MB + 2 MB)
     { // 258 level-1 page table entries
         ptable[i] = pentry;
         pentry += 0x100000;
-    }
+    } */
 
-/*     printf("2. fill 130 entries of pgtable to ID map 130 MB VA to PA\n");
+    printf("2. fill 130 entries of pgtable to ID map 130 MB VA to PA\n");
     pentry = 0x412; // AP = 01,domain = 0000, CB = 00, type = 02 for section
-    for (i = 0; i < 130; i++)//* 130 MB (128 MB + 2 MB I/O)
-    { // 258 level-1 page table entries
-        //ptable[i] = pentry;
-        //pentry += 0x100000;
-
+    /* for (i = 0; i < 130; i++)//* 130 MB (128 MB + 2 MB I/O)
+    { // 130 level-1 page table entries
         if ( i < 130)
         {
             ptable[i] = pentry;
-            pentry += 0x100000;
         }
-        else
-        {
-            ptable[i] = 0x421;
-            pentry += 0x100000;
-        }
+        pentry += 0x100000;
     } */
 
-/*     while (i < 258)
-    {
-        ptable[i] = 0x411;
+    for (i = 0; i < 130; i++)//* 130 MB (128 MB + 2 MB I/O)
+    { // 130 level-1 page table entries    
+        ptable[i] = pentry;
         pentry += 0x100000;
-        i++;
-    } */
+    }
+
 
     printf("3. finished building level-1 page table\n");
     printf("4. return to set TTB, domain and enable MMU\n");
@@ -198,9 +190,10 @@ int main()
     p = (int *)(512 * 0x100000);
     *p = 123; */
     
-
+   color=PURPLE;
     while(1)                                //! Probably not due to kforks above
     {
+        color=PURPLE;
         printf("main running Input a line: ");
         kgets(line);
         printf(" line = %s\n", line);
