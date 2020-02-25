@@ -86,6 +86,8 @@ int data_chandler() //data abort handler
     printf("data_abort exception in ");
     if ((spsr & 0x1F) == 0x13)
         printf("SVC mode\n");
+    if((spsr & 0x1F) == 0x10)
+        printf("USER mode\n");
     fault_status = get_fault_status();
     fault_addr = get_fault_addr();
     domain = (fault_status & 0xF0) >> 4;

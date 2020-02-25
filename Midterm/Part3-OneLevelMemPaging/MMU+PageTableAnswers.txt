@@ -1,24 +1,26 @@
-	| Program tries to access memory  ==========>  MMU Checks Access
-	| 		                                       • The permission to access the memory area get's 
-    |                                                 checked by MMU's access control logic which 
-    |                                                 determines if access to that memory is permitted
-	| 	 	                                       • If it doesn't have permission to access the memory, 
-    |                                                 the MMU catches it.
-    | ----------------------------------------------------------------------------------------------------                                               
-	| MMU signals CPU to abort        ==========>  Vector Table to look up data_abort_handler_addr
-    |   • CPU switches to privilege                 • LDR PC, Data_abort_handler_addr
-    |      mode to handle exception
-    |         Reference Page 169		        
-    |       ○ Data abort mode
-    |            per page 180
-    | ----------------------------------------------------------------------------------------------------
-	| Vector Table                    ==========>  data_abort_handler() C function
-    |   • data_abort_handler_addr	    	         ○ Reads MMU data fault register c5
-	| 		                                         ○ Getsprc() to get the read mode
-	| 		                                         ○ Check what mode the CPU was in
-	| 		                                         ○ In what virtual address it occurred
-	| 		                                         ○ What is the reason the fault occurred
-    |                                                     ○ Fault address register c6
+     _______________________________________________________________________________________________________
+    |                                                                                                       |
+	| Program tries to access memory  ==========>  MMU Checks Access                                        |
+	| 		                                       • The permission to access the memory area get's         |
+    |                                                 checked by MMU's access control logic which           |
+    |                                                 determines if access to that memory is permitted      |
+	| 	 	                                       • If it doesn't have permission to access the memory,    |
+    |                                                 the MMU catches it.                                   |
+    | ----------------------------------------------------------------------------------------------------  |
+	| MMU signals CPU to abort        ==========>  Vector Table to look up data_abort_handler_addr          |
+    |   • CPU switches to privilege                 • LDR PC, Data_abort_handler_addr                       |
+    |      mode to handle exception                                                                         |
+    |         Reference Page 169		                                                                    |
+    |       ○ Data abort mode                                                                               |
+    |            per page 180                                                                               |
+    | ----------------------------------------------------------------------------------------------------  |
+	| Vector Table                    ==========>  data_abort_handler() C function                          |
+    |   • data_abort_handler_addr	    	         ○ Reads MMU data fault register c5                     |
+	| 		                                         ○ Getsprc() to get the read mode                       |
+	| 		                                         ○ Check what mode the CPU was in                       |
+	| 		                                         ○ In what virtual address it occurred                  |
+	| 		                                         ○ What is the reason the fault occurred                |
+    |                                                     ○ Fault address register c6                       |
     |  -----------------------------------------------------------------------------------------------------|
     |                                                                                                       |
 	| data_abort_handler() C function  ==========>	Return to PC-4. This is the next instruction after      |

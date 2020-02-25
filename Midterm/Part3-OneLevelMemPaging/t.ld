@@ -13,14 +13,14 @@ SECTIONS
   .data : { *(.data) }
   .bss : { *(.bss) }
   . = ALIGN(8);
-  . = . + 0x1000; /* 4kB of stack memory */
+  . = . + 0x1000; /* 4kB of SVC mode stack memory */
   svc_stack_top = .;
-  . = . + 0x1000; /* 4kB of irq stack memory */
+  . = . + 0x1000; /* 4kB of irq mode stack memory */
   irq_stack_top = .;
   /* brand new code - Testing */
-  . = . + 0x1000; /* 4kB of abt stack memory */
+  . = . + 0x1000; /* 4kB of data abort stack memory */
   und_stack_top = .;
-  . = . + 0x1000; /* 4kB of und stack memory */
+  . = . + 0x1000; /* 4kB of undefine stack memory */
   abt_stack_top = .;
   . = ALIGN(1024);
 }

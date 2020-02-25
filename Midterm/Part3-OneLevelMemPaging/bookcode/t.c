@@ -114,7 +114,7 @@ int main()
     p = (int *)0x020000000;
     *p = 123;
     printf("test MMU protection: try to access VA = 0x20000000\n");
-    p = (int *)0x20000000;
+    p = (int *)0x200000000;
     *p = 123;
     while (1)
     {
