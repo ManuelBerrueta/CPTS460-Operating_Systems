@@ -134,6 +134,7 @@ int main()
     color=WHITE;
     while(1)                                //! Probably not due to kforks above
     {
+        color=WHITE;
         if (readyQueue)
         {
 
