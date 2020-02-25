@@ -208,6 +208,6 @@ int main()
         color=WHITE;
         printf("main running Input a line: ");
         kgets(line);
-        printf(" line = %s\n", line);
+        printf(" \nline = %s\n", line);
     }
 }
