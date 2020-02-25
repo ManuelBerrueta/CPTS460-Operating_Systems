@@ -55,10 +55,12 @@ int mkptable() // build level-1 pgtable using 1 MB sections
     pentry = 0x412; // AP = 01,domain = 0000, CB = 00, type = 02 for section
     for (i = 0; i < 258; i++)//* 130 MB (128 MB + 2 MB I/O)
     { // 130 level-1 page table entries
-        if ( i < 128)
+        //! 128 MB
+        if ( i < 128)   
         {
             ptable[i] = pentry;
         }
+        //! 2 MB I/O
         if (i > 255)
         {
             ptable[i] = pentry;
