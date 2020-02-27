@@ -1,3 +1,27 @@
+(1). Which of these will generate data_abort faults? WHY?
+	Both, the "*p = (int *)(128*0x100000); *p = 123;" and "*p = (int *)(512*0x100000); *p = 123;" will generate data_abort faults. 
+    This is because we have initialized only up to 127 (because is 0 indexed), therefore the 128*0x100000 is 1 over 
+    and accessing memory area that is not allowed to. With the 512*0x100000 the situation is similar in that is trying 
+    to access memory area that is not allowed to, but it is also beyond the memory capacity of the board. This board has
+     only 256MB + the 2 MB I/O for  total of 258 MB, thus it is way out of bounds. 
+	
+For testing:                          int *p;
+		printf("test MM at VA=2MB\n");
+		p = (int *)(2*0x100000); *p = 123;
+		
+		printf("test MM at VA=127MB\n");
+		p = (int *)(127*0x100000); *p = 123;
+		
+		printf("test MM at VA=128MB\n");
+		*p = (int *)(128*0x100000); *p = 123;
+		
+		printf("test MM at VA=512MB\n");
+		*p = (int *)(512*0x100000); *p = 123;
+
+(2). When a data_abort fault occurs, the program displays some error messages.
+     DRAW a diagram (with reason) to show the control flow of the CPU from
+     where the fault occurred to where it shows the error messages.
+	Using this program as reference the control flow is as follows:
      _______________________________________________________________________________________________________
     |                                                                                                       |
 	| Program tries to access memory  ==========>  MMU Checks Access                                        |

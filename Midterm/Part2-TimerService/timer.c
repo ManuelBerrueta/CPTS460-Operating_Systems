@@ -67,7 +67,7 @@ void timer_handler(int n)
     //if (t->tick == 120)
     if (t->tick == 5) //! NOTE: Here is where you change the speed!
     {
-        printf("At every second Here we decremnt Queue\n");
+        //printf("At every second Here we decremnt Queue\n");
         //TODO: it may be possible to do all of the code here?
         //! if value of a proc in the queue is 0, then put back in readyQueue
 
@@ -90,8 +90,11 @@ void timer_handler(int n)
                 
                 //kwakeup(&timeOutProc->pid);
                 timerWakeup(&timeOutProc->pid);
-                printf("\n\n Woke up Proc %d", timeOutProc->pid);
+                int tempColor = color;
+                color=GREEN;
+                printf("\n\n\n\n==========[ Woke up Proc %d ]==========\n\n", timeOutProc->pid);
 
+                color=tempColor;
                 //TODO: Possibly kfork body if sleepList is empty after dequeue
             }    
             // I can probably use a modified printlist to show the time
@@ -100,7 +103,8 @@ void timer_handler(int n)
         }
         else
         {
-            printf("\n\nTimerQueue is empty\n\n");
+            //printf("\n\nTimerQueue is empty\n\n");
+            //body();
         }
         
         

@@ -180,9 +180,7 @@ int body()
     {
         printf("-------- proc %d running -----------\n", running->pid);
 
-        printList("freeList  ", freeList);
-        printList("readyQueue", readyQueue);
-        printsleepList(sleepList);
+        
 
         printf("Enter a command [sleep|wakeup|switch|kfork|t|wait|exit] : ",
                running->pid);
