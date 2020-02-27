@@ -81,7 +81,7 @@ int kfork(int func, int priority)           //! kfork is different in pipe.tgz
     printf("proc %d kforked a child %d\n", running->pid, p->pid);
     //printList("readyQueue", readyQueue);
     //printList("Proc[%d] Children:", p);
-    printChildList(running);
+    //printChildList(running);
 
     return p->pid;
 }
@@ -146,7 +146,10 @@ int waitTime()
     {
         printf("No Zombie Children!\n\n");
     } else {
-        printf("\n\n====KWAIT: Proc[%d] Took her of ZombieChild[%d]\n\n", running->pid, pid);
+        int temp = color;
+        color=PURPLE;
+        printf("\n\n====KWAIT: Proc[%d] Took Care of ZombieChild[%d]\n\n", running->pid, pid);
+        color = temp;
     }
     printChildList(running);
 }
@@ -157,11 +160,11 @@ int body()
     char c, cmd[64];
     int tempEvent = -99;
 
-    kprintf("proc %d resume to body()\n", running->pid);
+    kprintf("\nproc %d resume to body()\n", running->pid);
     while (1)
     {
-        printf("-------- proc %d running -----------\n", running->pid);
-
+        printf("\n-------- proc %d running -----------\n", running->pid);
+        printChildList(running);
         printList("freeList  ", freeList);
         printList("readyQueue", readyQueue);
         printsleepList(sleepList);

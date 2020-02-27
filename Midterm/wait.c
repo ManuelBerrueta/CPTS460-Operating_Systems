@@ -52,9 +52,9 @@ int kexit(int exitValue) // SIMPLE kexit() for process to terminate
 
     printf("Proc %d exit\n", running->pid);
     printf("Proc %d is Zombie Child of Proc %d\n", running->pid, running->parent->pid);
-    // Dead child (current running process) must wake up parent, 
-    // so parent can take care of dead child.
-    kwakeup(running->parent);
+    // Dead child (current running process) must wake up proc 1, so it can take care of dead child.
+    //kwakeup(running->parent);
+    kwakeup(&proc[1]);
     tswitch();
 }
 

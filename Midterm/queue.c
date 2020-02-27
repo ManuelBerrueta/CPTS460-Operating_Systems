@@ -38,7 +38,7 @@ treeEnqueue(PROC *parent, PROC *inChild)
     // If the parents has no child, then parents child points to incoming child
     // Else we find a place in the sibling list    
     //if (parent->child == 0)
-    if (!(parent->child) )
+    if (!(parent->child))
     {
         //inChild->parent = parent; // Assign Parent as child's parent
         parent->child = inChild;            // Assign inChild as Parent's child
@@ -48,6 +48,8 @@ treeEnqueue(PROC *parent, PROC *inChild)
         //parent->child->ppid = parent->pid;
     } else {
         
+        //!TESTING
+        //parent->child->parent = parent;
         PROC *temp = parent->child; //This will be our temp child iterator
         //! We iterate until we find an empty sibling spot
         while(temp->sibling != 0)
