@@ -1,0 +1,11 @@
+write a sh script, mksdc, to
+============================================================
+1. create a sdimage with 1024 1KB blocks
+2. format sdimage as an EXT2 file system with 1024 1KB blocks
+3. mount sdimage on /mnt
+4. mkdir bin dev etc user       on the mounted sdimage
+5. umount it
+============================================================
+
+This sdimage will be used as a virtual SDC in LAB5 assignment.
+
