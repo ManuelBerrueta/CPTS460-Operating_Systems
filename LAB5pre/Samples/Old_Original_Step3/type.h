@@ -88,9 +88,6 @@ typedef struct proc{
   int    pid;
   int    ppid;
   struct proc *parent;
-  
-  struct proc *child;
-  struct proc *sibling;
 
   int    event;     // sleep event
   int    exitCode;  // exit status
