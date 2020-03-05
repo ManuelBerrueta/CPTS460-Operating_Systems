@@ -57,3 +57,4 @@ A hard disk can be divided into 4 Primary Partitions. The partitions are recorde
 		○ We then use getblk for each ip->i_block[i], starting at offset 0 from 0x1000, where ES is set at
 		○ We then increment ES by 1KB for each ip->i_block[i] by using the inces()( function
 		○ We follow a similar procedure for indirect blocks in ip->i_block[12] is there exists any
+
