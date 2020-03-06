@@ -1,8 +1,8 @@
 int umenu()
 {
-  uprintf("-------------------------------\n");
-  uprintf("getpid getppid ps chname switch\n");
-  uprintf("-------------------------------\n");
+  uprintf("-------------------------------------\n");
+  uprintf("getpid getppid ps chname switch getpa\n");
+  uprintf("-------------------------------------\n");
 }
 
 int getpid()

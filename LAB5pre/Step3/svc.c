@@ -13,7 +13,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************/
-#include "type.h"
+//#include "type.h"
 extern PROC proc[], *running;
 extern int tswitch();
 
@@ -39,7 +39,7 @@ char *pstatus[] = {"FREE   ", "READY  ", "SLEEP  ", "BLOCK  ", "ZOMBIE", " RUN  
 int kps()
 {
     // print process info
-    printf("\nProcess %d STATUS=%s\n", running->pid, pstatus[running->status]);
+    printf("\nBERRNIX\nProcess %d STATUS=%s\n\n", running->pid, pstatus[running->status]);
 }
 
 int kchname(char *s)
@@ -53,7 +53,7 @@ int kgetPA()
     //return Umode PA of process
     //return &ptable[2058];
     u32 *ut = (u32 *)0x400000;   // at 4MB
-    return &ut[2048]; //For testing only
+    return &(ut[2048]); //For testing only
 }
 
 int svc_handler(int a, int b, int c, int d)
