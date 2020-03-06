@@ -12,11 +12,4 @@ umount /mnt
 rm $1
 rm *.o *.elf
 
-
-
-
- 
-
-
-
-
+fdisk -l sdimage sdimage.original

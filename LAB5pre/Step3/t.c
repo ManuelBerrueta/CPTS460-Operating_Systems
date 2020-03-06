@@ -28,7 +28,7 @@ int color;
 #include "kernel.c"
 #include "wait.c"
 
-//#include "svc.c"
+#include "svc.c"
 
 #include "sdc.c"
 //#include "load.c"
