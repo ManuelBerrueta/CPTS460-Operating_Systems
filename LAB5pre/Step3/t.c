@@ -35,19 +35,6 @@ int color;
 #include "load.c"
 
 
-//! File System Globals
-#define BLK 1024
-GD *gp;
-INODE *ip;
-DIR *dp;
-
-//u16 NSEC = 2;
-char buf1[BLK], buf2[BLK];
-//int color = 0x0A;
-u8 ino;
-u16  i, iblk;
-
-
 void copy_vectors(void) {
     extern u32 vectors_start;
     extern u32 vectors_end;

@@ -144,6 +144,8 @@ PROC *kfork(char *filename)
   p->cpsr = (int *)0x10;    // previous mode was Umode
 
   // must load filename to Umode image area at 8MB+(pid-1)*1MB
+
+  printf("==={ Loading %s image }===\n", filename);
   
   r = load(filename, p); // p->PROC containing pid, pgdir, etc
   if (r==0){
