@@ -52,8 +52,14 @@ int kgetPA()
 {
     //return Umode PA of process
     //return &ptable[2058];
-    u32 *ut = (u32 *)0x400000;   // at 4MB
-    return &(ut[2048]); //For testing only
+    //u32 *ut = (u32 *)0x400000;   // at 4MB
+    //printf("\n\nPA: Hex:%x  Int:%d\n\n", &(ut[2048]), &(ut[2048]));
+    //return &(ut[2048]); //For testing only
+
+    printf("\n\nPA: Hex:%x  Int:%d\n\n", running->pgdir[2048], running->pgdir[2048]);
+    return running->pgdir[2048];
+    //TODO: I think I got to start a pgdir on the proc
+
 }
 
 int svc_handler(int a, int b, int c, int d)
