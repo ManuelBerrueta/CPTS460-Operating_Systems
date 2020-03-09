@@ -45,7 +45,7 @@ int kps()
     printf("\nPS:\n");
     PROC *p = running;
     while(p){
-    printf("Process %d | Status = ", p->pid);
+    printf("Process %d | Name = %s |Status = ", p->pid, p->name);
     tempColor=color;
     color=PURPLE;
     printf("%s\n",  pstatus[p->status]);
@@ -57,6 +57,8 @@ int kps()
     }
     }
     printf("\n");
+
+    return 1;
 }
 
 
@@ -64,6 +66,7 @@ int kchname(char *s)
 {
     // change process name  to string s
     strcpy(running->name, s);
+    return 1;
 }
 
 int kgetPA()
@@ -77,7 +80,6 @@ int kgetPA()
     printf("\n\nPA: Hex:%x  Int:%d\n\n", running->pgdir[2048], running->pgdir[2048]);
     return running->pgdir[2048];
     //TODO: I think I got to start a pgdir on the proc
-
 }
 
 int svc_handler(int a, int b, int c, int d)
