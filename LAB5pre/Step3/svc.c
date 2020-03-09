@@ -35,12 +35,30 @@ int kgetppid()
     return running->ppid;
 }
 
+
 char *pstatus[] = {"FREE   ", "READY  ", "SLEEP  ", "BLOCK  ", "ZOMBIE", " RUN  "};
+
 int kps()
 {
+    int tempColor;
     // print process info
-    printf("\nBERRNIX\nProcess %d STATUS=%s\n\n", running->pid, pstatus[running->status]);
+    printf("\nPS:\n");
+    PROC *p = running;
+    while(p){
+    printf("Process %d | Status = ", p->pid);
+    tempColor=color;
+    color=PURPLE;
+    printf("%s\n",  pstatus[p->status]);
+    color=tempColor;
+    p = p->next;
+    if(p->pid == 0)
+    {
+        break;
+    }
+    }
+    printf("\n");
 }
+
 
 int kchname(char *s)
 {

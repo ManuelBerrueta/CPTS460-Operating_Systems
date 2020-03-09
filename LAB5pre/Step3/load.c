@@ -2,7 +2,7 @@
 
 extern int getblock(int blk, char *buf);
 
-int search(INODE *ip, char *fname)
+/* int search(INODE *ip, char *fname)
 {
     int i = 0;
     char buf1[BLK], buf2[BLK];
@@ -43,6 +43,49 @@ int search(INODE *ip, char *fname)
         }
     }
     return 0;
+} */
+
+int search(INODE *ip, char *name)
+{
+    // YOUR search() fucntion as in LAB 6
+    char temp[256];
+    char sbuf[BLK];
+    DIR *dp;
+    char *cp;
+    int ino, block, offset;
+    int i=0;
+
+    printf("Searching for %s ino\n", name);
+
+    for(i=0; i < 12; i++)
+    {
+        if (ip->i_block[i] == 0)
+        {
+            break;
+        }
+        getblock(ip->i_block[i], sbuf);
+        dp = (DIR *)sbuf;
+        cp = sbuf;
+
+        while(cp < sbuf + BLK)
+        {
+            strcpy(temp, dp->name);
+            temp[dp->name_len] = 0; //add null char to the end off the dp->name
+
+            //TODO: strcmp to see if the given name exists
+            if (strcmp(&name[i], temp) == 0)
+            {
+                printf("*****={ inode %s found, inode# = %d }=*****\n", name, dp->inode);
+                printf("%4d       %4d      %4d        %s\n", 
+                dp->inode, dp->rec_len, dp->name_len, temp);
+                return dp->inode;
+            }
+            cp += dp->rec_len;
+            dp = (DIR *)cp;
+        }
+    }
+    printf("**inode %s, not found in data blocks\n\n", name);
+    return 0;
 }
 
 
@@ -80,14 +123,13 @@ int load(char *filename, PROC *p)
     
     // TODO: Currently broken here, possibly bad search function
     
-    ino = search(ip, "bin") - 1; //Searching for "bin" in root and get it's inode #
     printf("=={ Searching for bin ino }==\n");
+    ino = search(ip, "bin") - 1; //Searching for "bin" in root and get it's inode #
     //printf("\n\r");
-
-
     getblock(iblk+(ino/8), buf2);
     ip = (INODE *)buf2 + (ino % 8); // ip points to bin's inode
 
+    printf("=={ Searching for %s ino }==\n", filename);
     ino = search(ip, filename) -1; //Searching for filename in bin directory and get it's inode #
     getblock(iblk+(ino/8), buf2);
     ip = (INODE *)buf2 + (ino % 8); //ip points to filename's inode
@@ -132,8 +174,7 @@ int load(char *filename, PROC *p)
             umode_mem_address += 1024;
         }
     }
-    printf("\n\rFIN");
-
-    //printf("FIN");
+    printf("\n\rFinished Loading %s\n", filename);
     getc();
+    return 1;
 }
