@@ -40,22 +40,39 @@ char *pstatus[] = {"FREE   ", "READY  ", "SLEEP  ", "BLOCK  ", "ZOMBIE", " RUN  
 
 int kps()
 {
-    int tempColor;
+    int i = 0;
+    int tempColor = 0;
+    PROC *p = 0;
+
     // print process info
-    printf("\nPS:\n");
+    /* printf("\nPS:\n");
     PROC *p = running;
     while(p){
-    printf("Process %d | Name = %s |Status = ", p->pid, p->name);
-    tempColor=color;
-    color=PURPLE;
-    printf("%s\n",  pstatus[p->status]);
-    color=tempColor;
-    p = p->next;
-    if(p->pid == 0)
-    {
-        break;
-    }
-    }
+        printf("Process %d | Name = %s |Status = ", p->pid, p->name);
+        tempColor=color;
+        color=PURPLE;
+        printf("%s\n",  pstatus[p->status]);
+        color=tempColor;
+        p = p->next;
+        if(p->pid == 0)
+        {
+            break;
+        }
+    } */
+
+    printf("\nPS:\n");
+    do {
+        p = &proc[i];
+        printf("Process %d | Name = %s |Status = ", p->pid, p->name);
+        tempColor=color;
+        color=PURPLE;
+        printf("%s\n",  pstatus[p->status]);
+        color=tempColor;
+        p = p->next;
+        i++;
+    } while (i < NPROC);
+
+
     printf("\n");
 
     return 1;
