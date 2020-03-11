@@ -36,7 +36,7 @@ int kgetppid()
 }
 
 
-char *pstatus[] = {"FREE   ", "READY  ", "SLEEP  ", "BLOCK  ", "ZOMBIE", " RUN  "};
+char *pstatus[] = {"FREE   ", "READY  ", "SLEEP  ", "BLOCK  ", "ZOMBIE", " RUNNING  "};
 
 int kps()
 {
@@ -63,10 +63,18 @@ int kps()
     printf("\nPS:\n");
     do {
         p = &proc[i];
+
         printf("Process %d | Name = %s |Status = ", p->pid, p->name);
         tempColor=color;
         color=PURPLE;
-        printf("%s\n",  pstatus[p->status]);
+        if(p == running)
+        {
+            printf("%s\n",  pstatus[5]);
+        }
+        else
+        {
+            printf("%s\n",  pstatus[p->status]);
+        }
         color=tempColor;
         p = p->next;
         i++;
