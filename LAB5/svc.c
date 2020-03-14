@@ -64,7 +64,7 @@ int kps()
     do {
         p = &proc[i];
 
-        printf("Process %d | Name = %s |Status = ", p->pid, p->name);
+        printf("PROC[ %d]: PID=%d | PPID=%d | Name = %s |\t Status = ",i, p->pid, p->ppid, p->name);
         tempColor=color;
         color=PURPLE;
         if(p == running)
@@ -102,7 +102,7 @@ int kgetPA()
     //printf("\n\nPA: Hex:%x  Int:%d\n\n", &(ut[2048]), &(ut[2048]));
     //return &(ut[2048]); //For testing only
 
-    printf("\n\nPA: Hex:%x  Int:%d\n\n", running->pgdir[2048], running->pgdir[2048]);
+    printf("\nPA: Hex:%x  Int:%d\n", running->pgdir[2048], running->pgdir[2048]);
     return running->pgdir[2048];
     //TODO: I think I got to start a pgdir on the proc
 }
@@ -131,7 +131,23 @@ int svc_handler(int a, int b, int c, int d)
     case 4:
         r = ktswitch();
         break;
-
+    case 5:
+        r = ksleep((int)b);
+        break;
+    case 6:
+        r = kwakeup((int)b);
+        break;
+    case 7:
+        r = kfork((char *)b);
+        break;
+    case 8:
+        r = kexit((int)b);
+        break;
+    case 9:
+        r = kwait((int *)b);
+        break;
+    //case 10: r = fork(); break;
+    //case 11: r = exec((char *)b); break;
     case 90:
         r = kgetc();
         break;
@@ -144,6 +160,5 @@ int svc_handler(int a, int b, int c, int d)
     default:
         printf("invalid syscall %d\n", a);
     }
-
     return r; //return to goUmode in ts.s, which will replace r0 in Kstack with r
 }
