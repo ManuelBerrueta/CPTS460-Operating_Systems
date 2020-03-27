@@ -41,7 +41,7 @@ int uchname()
   return syscall(3,s,0,0);
 }
 
-int ukfork()                                //TODO: Need to fix this
+int ukfork()
 {
   int pid;
   pid = syscall(7,0,0,0);
