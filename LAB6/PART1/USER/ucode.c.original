@@ -41,28 +41,28 @@ int uchname()
   return syscall(3,s,0,0);
 }
 
-int ukfork()                                //TODO: Need to fix this
+int ukfork()
 {
   int pid;
-  pid = syscall(7,0,0,0);
+  pid = syscall(4,0,0,0);
   uprintf("kforked child = %d\n", pid);
 }
 
 int uswitch()
 {
-  syscall(4,0,0,0);
+  syscall(5,0,0,0);
 }
 
 int wait(int *status)
 {
-  return syscall(9, status,0,0);
+  return syscall(6, status,0,0);
 }
 
 int uwait()
 {
   int pid, status;
-  uprintf("%d syscall9 to wait for ZOMBIE child\n", getpid());
-  pid = syscall(9,&status,0,0);
+  uprintf("%d syscall6 to wait for ZOMBIE child\n", getpid());
+  pid = syscall(6,&status,0,0);
   uprintf("%d waited for a ZOMBIE child=%d ", getpid(), pid);
   if (pid>0)
     uprintf("status=%x %d", status, status);
@@ -80,7 +80,7 @@ int uexit()
   uprintf("input an exit value : ");
   printf("\n");
   value = geti();
-  syscall(8,value,0,0);
+  syscall(7,value,0,0);
 }
 
 int ugetusp()
@@ -102,7 +102,7 @@ int ufork()
 {
   int pid;
 
-  pid = syscall(10,0,0,0);// can we find out the return PC here?
+  pid = syscall(9,0,0,0);// can we find out the return PC here?
   if (pid>0){
     uprintf("parent %d forked a child %d\n", getpid(), pid);
   }
@@ -121,7 +121,7 @@ int uexec()
   uprintf("enter a command string : ");
   ugets(line);
   uprintf("line=%s\n", line);
-  r = syscall(11,line,0,0);
+  r = syscall(10,line,0,0);
   if (r<0)
     uprintf("%d exec failed\n", getpid());
 }

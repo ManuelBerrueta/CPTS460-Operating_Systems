@@ -110,7 +110,7 @@ int fork()
     int i;
     char *PA, *CA;
     //PROC *p = get_proc(&freeList);
-    PROC *p = getproc(&freeList);
+    PROC *p = getproc();
 
     if (p == 0)
     {
@@ -123,15 +123,31 @@ int fork()
     p->status = READY;
     p->priority = 1;
 
+    uPtable(p);
+    
+    printf("running usp=%x | upc=%x\n", running->usp, running->upc);
+
     //PA = (char *)running->pgdir[2048] & 0xFFFF0000; // parent Umode PA
     //CA = (char *)p->pgdir[2048] & 0xFFFF0000;       // child Umode PA
-    PA =  running->pgdir[2048] & 0xFFFF0000; // parent Umode PA
-    CA =  p->pgdir[2048] & 0xFFFF0000;       // child Umode PA
+    PA =  running->pgdir[2048] & 0xFFFF0000;        // parent Umode PA
+    CA =  p->pgdir[2048] & 0xFFFF0000;              // child Umode PA
+    printf("FORK: child %d uimage at %x\n", p->pid, CA);
+    printf("copy Umode image from %x to %x\n", PA, CA);
+
     memcpy(CA, PA, 0x100000);                       // copy 1MB Umode image
+
+    // The hard part: child must resume to the same place as parent
+    // Child kstack must contain | parent kstack | goUmode stack | => copy kstack
+    printf("Copy kernel mode stack\n");
 
     for (i = 1; i <= 14; i++)
     { // copy bottom 14 entries of kstack
         p->kstack[SSIZE - i] = running->kstack[SSIZE - i];
+    }
+
+    for(i=15; i <= 28; i++)
+    {
+        p->kstack[SSIZE - i] = 0;
     }
 
     p->kstack[SSIZE - 14] = 0;            // child return pid = 0
@@ -139,8 +155,11 @@ int fork()
     p->ksp = &(p->kstack[SSIZE - 28]);    // child saved ksp
     p->usp = running->usp;                // same usp as parent
     p->cpsr = running->cpsr;              // same spsr as parent
+    p->upc = running->upc;
 
     enqueue(&readyQueue, p);
+    printf("KERNEL: proc %d forked a child %d\n", running->pid, p->pid);
+    printQ(readyQueue);
 
     return p->pid;
 }
@@ -150,11 +169,16 @@ int exec(char *cmdline) // cmdline=VA in Uspace
     int i, upa, usp;
     char *cp, kline[128], file[32], filename[32];
     PROC *p = running;
+    int umodeSize = 0x100000;
+
+    printf("EXEC: proc %d cmdline=%x\n", running->pid, cmdline);
+
     
     strcpy(kline, cmdline); // fetch cmdline into kernel space
+    printf("EXEC: proc %d kline = %s\n", running->pid, kline);
+
     // get first token of kline as filename
     cp = kline;
-    
     i = 0;
     while (*cp != ' ')
     {
@@ -174,17 +198,22 @@ int exec(char *cmdline) // cmdline=VA in Uspace
     
     upa = p->pgdir[2048] & 0xFFFF0000; // PA of Umode image
     // loader return 0 if file non-exist or non-executable
+    kprintf("load file %s to %x\n", file, upa);
     
     //if (!loadelf(file, p))
     if (!load(file, p))
     {
+        printf("Loading FAILED!\n");
         return -1;
     }
 
     // copy cmdline to high end of Ustack in Umode image
     usp = upa + 0x100000 - 128; // assume cmdline len < 128
+    printf("usp=%x ", usp);
     strcpy((char *)usp, kline);
+
     p->usp = (int *)VA(0x100000 - 128);
+    printf("p->usp = %x ", p->usp);
     // fix syscall frame in kstack to return to VA=0 of new image
     
     for (i = 2; i < 14; i++) // clear Umode regs r1-r12
@@ -192,7 +221,10 @@ int exec(char *cmdline) // cmdline=VA in Uspace
         p->kstack[SSIZE - i] = 0;
     }
     
+    p->kstack[SSIZE - 14] = (int)VA(p->usp);
     p->kstack[SSIZE - 1] = (int)VA(0); // return uLR = VA(0)
+
+    kprintf("kexec exit\n");
 }
 
 int svc_handler(int a, int b, int c, int d)
