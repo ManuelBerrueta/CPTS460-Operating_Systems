@@ -120,6 +120,8 @@ int fork()
 
     p->ppid = running->pid;
     p->parent = running;
+    //p->sibling = running->child;
+    //running->child = p;
     p->status = READY;
     p->priority = 1;
 
@@ -129,8 +131,8 @@ int fork()
 
     //PA = (char *)running->pgdir[2048] & 0xFFFF0000; // parent Umode PA
     //CA = (char *)p->pgdir[2048] & 0xFFFF0000;       // child Umode PA
-    PA =  running->pgdir[2048] & 0xFFFF0000;        // parent Umode PA
-    CA =  p->pgdir[2048] & 0xFFFF0000;              // child Umode PA
+    PA =  (running->pgdir[2048] & 0xFFFF0000);        // parent Umode PA
+    CA =  (p->pgdir[2048] & 0xFFFF0000);              // child Umode PA
     printf("FORK: child %d uimage at %x\n", p->pid, CA);
     printf("copy Umode image from %x to %x\n", PA, CA);
 
@@ -155,7 +157,7 @@ int fork()
     p->ksp = &(p->kstack[SSIZE - 28]);    // child saved ksp
     p->usp = running->usp;                // same usp as parent
     p->cpsr = running->cpsr;              // same spsr as parent
-    p->upc = running->upc;
+    //p->upc = running->upc;
 
     enqueue(&readyQueue, p);
     printf("KERNEL: proc %d forked a child %d\n", running->pid, p->pid);
@@ -189,14 +191,14 @@ int exec(char *cmdline) // cmdline=VA in Uspace
 
     filename[i] = 0;
     file[0] = 0;
-    if (filename[0] != '/')    // if filename relative
+    /* if (filename[0] != '/')    // if filename relative
     {
         strcpy(file, "/bin/"); // prefix with /bin/
-    }
+    } */
     //strcat(file, filename);
     kstrcat(file, filename);
     
-    upa = p->pgdir[2048] & 0xFFFF0000; // PA of Umode image
+    upa = (p->pgdir[2048] & 0xFFFF0000); // PA of Umode image
     // loader return 0 if file non-exist or non-executable
     kprintf("load file %s to %x\n", file, upa);
     
@@ -225,6 +227,8 @@ int exec(char *cmdline) // cmdline=VA in Uspace
     p->kstack[SSIZE - 1] = (int)VA(0); // return uLR = VA(0)
 
     kprintf("kexec exit\n");
+    
+    return p->usp;
 }
 
 int svc_handler(int a, int b, int c, int d)
