@@ -67,6 +67,10 @@ int mkPtable()
 }
 
 int kprintf(char *fmt, ...);
+//int ufork();
+//int uexec();
+//int fork();
+//int exec();
 
 void IRQ_handler()
 {

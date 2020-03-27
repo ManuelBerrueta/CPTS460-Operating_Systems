@@ -35,7 +35,6 @@ int kgetppid()
     return running->ppid;
 }
 
-
 char *pstatus[] = {"FREE   ", "READY  ", "SLEEP  ", "BLOCK  ", "ZOMBIE", " RUNNING  "};
 
 int kps()
@@ -61,31 +60,30 @@ int kps()
     } */
 
     printf("\nPS:\n");
-    do {
+    do
+    {
         p = &proc[i];
 
-        printf("PROC[ %d]: PID=%d | PPID=%d | Name = %s |\t Status = ",i, p->pid, p->ppid, p->name);
-        tempColor=color;
-        color=PURPLE;
-        if(p == running)
+        printf("PROC[ %d]: PID=%d | PPID=%d | Name = %s |\t Status = ", i, p->pid, p->ppid, p->name);
+        tempColor = color;
+        color = PURPLE;
+        if (p == running)
         {
-            printf("%s\n",  pstatus[5]);
+            printf("%s\n", pstatus[5]);
         }
         else
         {
-            printf("%s\n",  pstatus[p->status]);
+            printf("%s\n", pstatus[p->status]);
         }
-        color=tempColor;
+        color = tempColor;
         p = p->next;
         i++;
     } while (i < NPROC);
-
 
     printf("\n");
 
     return 1;
 }
-
 
 int kchname(char *s)
 {
@@ -105,6 +103,96 @@ int kgetPA()
     printf("\nPA: Hex:%x  Int:%d\n", running->pgdir[2048], running->pgdir[2048]);
     return running->pgdir[2048];
     //TODO: I think I got to start a pgdir on the proc
+}
+
+int fork()
+{
+    int i;
+    char *PA, *CA;
+    //PROC *p = get_proc(&freeList);
+    PROC *p = getproc(&freeList);
+
+    if (p == 0)
+    {
+        printf("fork failed\n");
+        return -1;
+    }
+
+    p->ppid = running->pid;
+    p->parent = running;
+    p->status = READY;
+    p->priority = 1;
+
+    //PA = (char *)running->pgdir[2048] & 0xFFFF0000; // parent Umode PA
+    //CA = (char *)p->pgdir[2048] & 0xFFFF0000;       // child Umode PA
+    PA =  running->pgdir[2048] & 0xFFFF0000; // parent Umode PA
+    CA =  p->pgdir[2048] & 0xFFFF0000;       // child Umode PA
+    memcpy(CA, PA, 0x100000);                       // copy 1MB Umode image
+
+    for (i = 1; i <= 14; i++)
+    { // copy bottom 14 entries of kstack
+        p->kstack[SSIZE - i] = running->kstack[SSIZE - i];
+    }
+
+    p->kstack[SSIZE - 14] = 0;            // child return pid = 0
+    p->kstack[SSIZE - 15] = (int)goUmode; // child resumes to goUmode
+    p->ksp = &(p->kstack[SSIZE - 28]);    // child saved ksp
+    p->usp = running->usp;                // same usp as parent
+    p->cpsr = running->cpsr;              // same spsr as parent
+
+    enqueue(&readyQueue, p);
+
+    return p->pid;
+}
+
+int exec(char *cmdline) // cmdline=VA in Uspace
+{
+    int i, upa, usp;
+    char *cp, kline[128], file[32], filename[32];
+    PROC *p = running;
+    
+    strcpy(kline, cmdline); // fetch cmdline into kernel space
+    // get first token of kline as filename
+    cp = kline;
+    
+    i = 0;
+    while (*cp != ' ')
+    {
+        filename[i] = *cp;
+        i++;
+        cp++;
+    }
+
+    filename[i] = 0;
+    file[0] = 0;
+    if (filename[0] != '/')    // if filename relative
+    {
+        strcpy(file, "/bin/"); // prefix with /bin/
+    }
+    //strcat(file, filename);
+    kstrcat(file, filename);
+    
+    upa = p->pgdir[2048] & 0xFFFF0000; // PA of Umode image
+    // loader return 0 if file non-exist or non-executable
+    
+    //if (!loadelf(file, p))
+    if (!load(file, p))
+    {
+        return -1;
+    }
+
+    // copy cmdline to high end of Ustack in Umode image
+    usp = upa + 0x100000 - 128; // assume cmdline len < 128
+    strcpy((char *)usp, kline);
+    p->usp = (int *)VA(0x100000 - 128);
+    // fix syscall frame in kstack to return to VA=0 of new image
+    
+    for (i = 2; i < 14; i++) // clear Umode regs r1-r12
+    {
+        p->kstack[SSIZE - i] = 0;
+    }
+    
+    p->kstack[SSIZE - 1] = (int)VA(0); // return uLR = VA(0)
 }
 
 int svc_handler(int a, int b, int c, int d)
@@ -146,8 +234,12 @@ int svc_handler(int a, int b, int c, int d)
     case 9:
         r = kwait((int *)b);
         break;
-    //case 10: r = fork(); break;
-    //case 11: r = exec((char *)b); break;
+    case 10:
+        r = fork();
+        break;
+    case 11:
+        r = exec((char *)b);
+        break;
     case 90:
         r = kgetc();
         break;
