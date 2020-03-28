@@ -131,6 +131,13 @@ int fork()
 
     //PA = (char *)running->pgdir[2048] & 0xFFFF0000; // parent Umode PA
     //CA = (char *)p->pgdir[2048] & 0xFFFF0000;       // child Umode PA
+    
+    //! COPY 2 MB Together does NOT WORK!
+    //PA =  (running->pgdir[2048] & 0xFFFF0000);        // parent Umode PA
+    //CA =  (p->pgdir[2048] & 0xFFFF0000);              // child Umode PA
+    //memcpy(CA, PA, 0x200000);
+    //printf("FORK: child %d uimage 2MB at %x\n", p->pid, CA);
+
     // 1 MB
     PA =  (running->pgdir[2048] & 0xFFFF0000);        // parent Umode PA
     CA =  (p->pgdir[2048] & 0xFFFF0000);              // child Umode PA
@@ -179,7 +186,6 @@ int exec(char *cmdline) // cmdline=VA in Uspace
     int i, upa, usp;
     char *cp, kline[128], file[32], filename[32];
     PROC *p = running;
-    int umodeSize = 0x100000;
 
     printf("EXEC: proc %d cmdline=%x\n", running->pid, cmdline);
 
@@ -218,11 +224,11 @@ int exec(char *cmdline) // cmdline=VA in Uspace
     }
 
     // copy cmdline to high end of Ustack in Umode image
-    usp = upa + 0x100000 - 128; // assume cmdline len < 128
+    usp = upa + UIMAGE_SIZE - 128; // assume cmdline len < 128
     printf("usp=%x ", usp);
     strcpy((char *)usp, kline);
 
-    p->usp = (int *)VA(0x100000 - 128);
+    p->usp = (int *)VA(UIMAGE_SIZE - 128);
     printf("p->usp = %x ", p->usp);
     // fix syscall frame in kstack to return to VA=0 of new image
     
