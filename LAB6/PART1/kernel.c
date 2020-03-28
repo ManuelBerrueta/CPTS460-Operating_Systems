@@ -18,66 +18,77 @@ extern int goUmode();
 
 PROC proc[NPROC], *freeList, *readyQueue, *sleepList, *running;
 int procsize = sizeof(PROC);
-char *pname[NPROC]={"sun", "mercury", "venus", "earth", "mars", "jupiter",
-                     "saturn","uranus","neptune"};
+char *pname[NPROC] = {"sun", "mercury", "venus", "earth", "mars", "jupiter",
+                      "saturn", "uranus", "neptune"};
 
 int kernel_init()
 {
-  int i, j; 
-  PROC *p; char *cp;
-  int *MTABLE, *mtable;
-  int paddr;
+    int i, j;
+    PROC *p;
+    char *cp;
+    int *MTABLE, *mtable;
+    int paddr;
 
-  kprintf("kernel_init()\n");
-  for (i=0; i<NPROC; i++){
-    p = &proc[i];
-    p->pid = i;
-    p->status = FREE;
-    p->priority = 0;
-    p->ppid = 0;
-    strcpy(p->name, pname[i]);
-    p->next = p + 1;
-  }
-  proc[NPROC-1].next = 0;
-  freeList = &proc[0];
-  readyQueue = 0;
-  sleepList = 0;
+    kprintf("kernel_init()\n");
+    for (i = 0; i < NPROC; i++)
+    {
+        p = &proc[i];
+        p->pid = i;
+        p->status = FREE;
+        p->priority = 0;
+        p->ppid = 0;
+        strcpy(p->name, pname[i]);
+        p->next = p + 1;
+    }
+    proc[NPROC - 1].next = 0;
+    freeList = &proc[0];
+    readyQueue = 0;
+    sleepList = 0;
 
-  running = dequeue(&freeList);
-  running->status = READY;
-  running->pgdir = (int *)0x400000; // P0 pgdir at 4MB
-  
-  printList(freeList);
+    running = dequeue(&freeList);
+    running->status = READY;
+    running->pgdir = (int *)0x400000; // P0 pgdir at 4MB
+
+    printList(freeList);
 }
 
 int scheduler()
 {
-  char line[8];
-  int pid; PROC *old=running;
-  char *cp;
-  kprintf("proc %d in scheduler\n", running->pid);
-  if (running->status==READY)
-     enqueue(&readyQueue, running);
-  printQ(readyQueue);
-  running = dequeue(&readyQueue);
+    char line[8];
+    int pid;
+    PROC *old = running;
+    char *cp;
+    kprintf("proc %d in scheduler\n", running->pid);
+    if (running->status == READY)
+        enqueue(&readyQueue, running);
+    printQ(readyQueue);
+    running = dequeue(&readyQueue);
 
-  kprintf("next running = %d\n", running->pid);
-  pid = running->pid;
-  if (pid==1) color=WHITE;
-  if (pid==2) color=GREEN;
-  if (pid==3) color=CYAN;
-  if (pid==4) color=YELLOW;
-  if (pid==5) color=BLUE;
-  if (pid==6) color=PURPLE;   
-  if (pid==7) color=RED;
-  // must switch to new running's pgdir; possibly need also flush TLB
+    kprintf("next running = %d\n", running->pid);
+    pid = running->pid;
+    if (pid == 1)
+        color = WHITE;
+    if (pid == 2)
+        color = GREEN;
+    if (pid == 3)
+        color = CYAN;
+    if (pid == 4)
+        color = YELLOW;
+    if (pid == 5)
+        color = BLUE;
+    if (pid == 6)
+        color = PURPLE;
+    if (pid == 7)
+        color = RED;
+    // must switch to new running's pgdir; possibly need also flush TLB
 
-  if (running != old){
-    printf("switch to proc %d pgdir at %x ", running->pid, running->pgdir);
-    printf("pgdir[2048] = %x\n", running->pgdir[2048]);
-    switchPgdir((u32)running->pgdir);
-  }
-}  
+    if (running != old)
+    {
+        printf("switch to proc %d pgdir at %x ", running->pid, running->pgdir);
+        printf("pgdir[2048] = %x\n", running->pgdir[2048]);
+        switchPgdir((u32)running->pgdir);
+    }
+}
 
 /*************** kfork(filename)***************************
 kfork() a new proc p with filename as its UMODE image.
@@ -93,82 +104,112 @@ Same as kfork() before EXCEPT:
 
 PROC *kfork(char *cmdline)
 {
-  int i, r; 
-  int pentry, *ptable;
-  char *cp, *cq, kline[128], file[32], filename[32];
-  char *addr;
-  char line[8];
-  int usize1, usize;
-  int *ustacktop, *usp;
-  u32 BA, Btop, Busp;
+    int i, r, upa, usp;
+    int pentry, *ptable;
+    char *cp, *cq, kline[128], file[32], filename[32];
+    char *addr;
+    char line[8];
+    int usize1, usize;
+    int *ustacktop; //, *usp;
+    u32 BA, Btop, Busp;
 
-  PROC *p = dequeue(&freeList);
-  if (p==0){
-    kprintf("kfork failed\n");
-    return (PROC *)0;
-  }
+    PROC *p = dequeue(&freeList);
+    if (p == 0)
+    {
+        kprintf("kfork failed\n");
+        return (PROC *)0;
+    }
 
-  printf("kfork %s\n", cmdline);
-  
-  p->ppid = running->pid;
-  p->parent = running;
-  p->status = READY;
-  p->priority = 1;
+    strcpy(kline, cmdline);
 
-  // build p's pgtable 
-  uPtable(p);
-  printf("new%d pgdir[2048]=%x\n", p->pid, p->pgdir[2048]); 
- 
-  // set kstack to resume to goUmode, then to Umode image at VA=0
-  for (i=1; i<29; i++)  // all 28 cells = 0
-    p->kstack[SSIZE-i] = 0;
+    printf("kfork cmdline: %s\n", kline);
+    kgetc();
 
-  p->kstack[SSIZE-15] = (int)goUmode;  // in dec reg=address ORDER !!!
-  p->ksp = &(p->kstack[SSIZE-28]);
+    cp = kline;
+    i = 0;
+    while (*cp != ' ')
+    {
+        filename[i] = *cp;
+        i++;
+        cp++;
+    }
+    filename[i] = 0;
+    file[0] = 0;
+    kstrcat(file, filename);
+    
+    upa = (p->pgdir[2048] & 0xFFFF0000); // PA of Umode image
+    // loader return 0 if file non-exist or non-executable
+    kprintf("load file %s to %x\n", file, upa);
+    
+    //if (!loadelf(file, p))
+    if (!load(file, p))
+    {
+        printf("Loading FAILED!\n");
+        return -1;
+    }
 
-  // kstack must contain a resume frame FOLLOWed by a goUmode frame
-  //  ksp  
-  //  -|-----------------------------------------
-  //  r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 fp ip pc|
-  //  -------------------------------------------
-  //  28 27 26 25 24 23 22 21 20 19 18  17 16 15
-  //  
-  //   usp   
-  // -|-----goUmode--------------------------------
-  //  r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 ufp uip upc|
-  //-------------------------------------------------
-  //  14 13 12 11 10 9  8  7  6  5  4   3    2   1
 
-  // to go Umode, must set new PROC's Umode cpsr to IF=00 umode=b'10000'=0x10
 
-  p->cpsr = (int *)0x10;    // previous mode was Umode
+    p->ppid = running->pid;
+    p->parent = running;
+    p->status = READY;
+    p->priority = 1;
 
-  // must load filename to Umode image area at 8MB+(pid-1)*1MB
+    // build p's pgtable
+    uPtable(p);
+    printf("new%d pgdir[2048]=%x\n", p->pid, p->pgdir[2048]);
 
-  printf("==={ Loading %s image }===\n", cmdline);
-  
-  r = load(cmdline, p); // p->PROC containing pid, pgdir, etc
-  if (r==0){
-     printf("load %s failed\n", cmdline);
-     return 0;
-  }
-  // must fix Umode ustack for it to goUmode: how did the PROC come to Kmode?
-  // by swi # from VA=0 in Umode => at that time all CPU regs are 0
-  // we are in Kmode, p's ustack is at its Uimage (8mb+(pid-1)*1Mb) high end
-  // from PROC's point of view, it's a VA at 1MB (from its VA=0)
-  
-  p->usp = (int *)VA(0x100000);  // usp->high end of 1MB Umode area
-  p->kstack[SSIZE-1] = VA(0);    // upc = VA(0): to beginning of Umode area
+    // set kstack to resume to goUmode, then to Umode image at VA=0
+    for (i = 1; i < 29; i++) // all 28 cells = 0
+        p->kstack[SSIZE - i] = 0;
 
-  // -|-----goUmode---------------------------------
-  //  r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 ufp uip upc|
-  //------------------------------------------------
-  //  14 13 12 11 10 9  8  7  6  5  4   3    2   1 |
+    p->kstack[SSIZE - 15] = (int)goUmode; // in dec reg=address ORDER !!!
+    p->ksp = &(p->kstack[SSIZE - 28]);
 
-  enqueue(&readyQueue, p);
+    // kstack must contain a resume frame FOLLOWed by a goUmode frame
+    //  ksp
+    //  -|-----------------------------------------
+    //  r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 fp ip pc|
+    //  -------------------------------------------
+    //  28 27 26 25 24 23 22 21 20 19 18  17 16 15
+    //
+    //   usp
+    // -|-----goUmode--------------------------------
+    //  r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 ufp uip upc|
+    //-------------------------------------------------
+    //  14 13 12 11 10 9  8  7  6  5  4   3    2   1
 
-  kprintf("proc %d kforked a child %d: ", running->pid, p->pid); 
-  printQ(readyQueue);
+    // to go Umode, must set new PROC's Umode cpsr to IF=00 umode=b'10000'=0x10
 
-  return p;
+    p->cpsr = (int *)0x10; // previous mode was Umode
+
+    // must load filename to Umode image area at 8MB+(pid-1)*1MB
+
+    printf("==={ Loading %s image }===\n", cmdline);
+
+    r = load(cmdline, p); // p->PROC containing pid, pgdir, etc
+    if (r == 0)
+    {
+        printf("load %s failed\n", cmdline);
+        return 0;
+    }
+    // must fix Umode ustack for it to goUmode: how did the PROC come to Kmode?
+    // by swi # from VA=0 in Umode => at that time all CPU regs are 0
+    // we are in Kmode, p's ustack is at its Uimage (8mb+(pid-1)*1Mb) high end
+    // from PROC's point of view, it's a VA at 1MB (from its VA=0)
+
+    p->usp = (int *)VA(0x100000); // usp->high end of 1MB Umode area
+    p->kstack[SSIZE - 1] = VA(0); // upc = VA(0): to beginning of Umode area
+
+    // -|-----goUmode---------------------------------
+    //  r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 ufp uip upc|
+    //------------------------------------------------
+    //  14 13 12 11 10 9  8  7  6  5  4   3    2   1 |
+
+    enqueue(&readyQueue, p);
+
+    kprintf("proc %d kforked a child %d: ", running->pid, p->pid);
+    printQ(readyQueue);
+
+    return p;
 }

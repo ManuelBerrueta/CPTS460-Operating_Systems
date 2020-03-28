@@ -141,6 +141,7 @@ int main()
 
    unlock();
    kfork("u1");
+   //kfork("u1 test 1 2");
    
    
    color = CYAN;
