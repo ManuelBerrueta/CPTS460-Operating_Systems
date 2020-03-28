@@ -73,8 +73,9 @@ int scheduler()
   // must switch to new running's pgdir; possibly need also flush TLB
 
   if (running != old){
-    printf("switch to proc %d pgdir at %x ", running->pid, running->pgdir);
-    printf("pgdir[2048] = %x\n", running->pgdir[2048]);
+    printf("switch to proc %d\npgdir @ %x| ", running->pid, running->pgdir);
+    printf("pgdir[2048] = %x| ", running->pgdir[2048]);
+    printf("pgdir[2049] = %x\n", running->pgdir[2049]);
     switchPgdir((u32)running->pgdir);
   }
 }  
@@ -117,7 +118,9 @@ PROC *kfork(char *filename)
 
   // build p's pgtable 
   uPtable(p);
-  printf("new%d pgdir[2048]=%x\n", p->pid, p->pgdir[2048]); 
+
+  printf("new Proc %d pgdir[2048]=%x\n", p->pid, p->pgdir[2048]);
+  printf("new Proc %d pgdir[2049]=%x\n", p->pid, p->pgdir[2049]);
  
   // set kstack to resume to goUmode, then to Umode image at VA=0
   for (i=1; i<29; i++)  // all 28 cells = 0

@@ -22,4 +22,5 @@ int uPtable(PROC *p)
         entry += 0x100000;
     }
     p->pgdir[2048] = 0x800000 + (p->pid -1) * 0x100000 | 0xC32;
+    p->pgdir[2049] = 0x1000000 + (p->pid -1) * 0x100000 | 0xC32;
 }
