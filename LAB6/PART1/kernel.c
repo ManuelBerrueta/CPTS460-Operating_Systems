@@ -91,11 +91,11 @@ Same as kfork() before EXCEPT:
    which causes p to return to Umode to execcute filename
 ***********************************************************/
 
-PROC *kfork(char *filename)
+PROC *kfork(char *cmdline)
 {
   int i, r; 
   int pentry, *ptable;
-  char *cp, *cq;
+  char *cp, *cq, kline[128], file[32], filename[32];
   char *addr;
   char line[8];
   int usize1, usize;
@@ -108,7 +108,7 @@ PROC *kfork(char *filename)
     return (PROC *)0;
   }
 
-  printf("kfork %s\n", filename);
+  printf("kfork %s\n", cmdline);
   
   p->ppid = running->pid;
   p->parent = running;
@@ -145,11 +145,11 @@ PROC *kfork(char *filename)
 
   // must load filename to Umode image area at 8MB+(pid-1)*1MB
 
-  printf("==={ Loading %s image }===\n", filename);
+  printf("==={ Loading %s image }===\n", cmdline);
   
-  r = load(filename, p); // p->PROC containing pid, pgdir, etc
+  r = load(cmdline, p); // p->PROC containing pid, pgdir, etc
   if (r==0){
-     printf("load %s failed\n", filename);
+     printf("load %s failed\n", cmdline);
      return 0;
   }
   // must fix Umode ustack for it to goUmode: how did the PROC come to Kmode?

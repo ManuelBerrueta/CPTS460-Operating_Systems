@@ -171,7 +171,6 @@ int exec(char *cmdline) // cmdline=VA in Uspace
     int i, upa, usp;
     char *cp, kline[128], file[32], filename[32];
     PROC *p = running;
-    int umodeSize = 0x100000;
 
     printf("EXEC: proc %d cmdline=%x\n", running->pid, cmdline);
 
