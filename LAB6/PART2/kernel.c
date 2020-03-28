@@ -160,7 +160,8 @@ PROC *kfork(char *filename)
   // we are in Kmode, p's ustack is at its Uimage (8mb+(pid-1)*1Mb) high end
   // from PROC's point of view, it's a VA at 1MB (from its VA=0)
   
-  p->usp = (int *)VA(0x100000);  // usp->high end of 1MB Umode area
+  //p->usp = (int *)VA(0x100000);  // usp->high end of 1MB Umode area
+  p->usp = (int *)VA(UIMAGE_SIZE);  // usp->high end of 2MB Umode area
   p->kstack[SSIZE-1] = VA(0);    // upc = VA(0): to beginning of Umode area
 
   // -|-----goUmode---------------------------------
