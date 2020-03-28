@@ -108,7 +108,7 @@ int kgetPA()
 int fork()
 {
     int i;
-    char *PA, *CA;
+    char *PA, *CA, *PA2, *CA2;
     //PROC *p = get_proc(&freeList);
     PROC *p = getproc();
 
@@ -131,12 +131,20 @@ int fork()
 
     //PA = (char *)running->pgdir[2048] & 0xFFFF0000; // parent Umode PA
     //CA = (char *)p->pgdir[2048] & 0xFFFF0000;       // child Umode PA
+    // 1 MB
     PA =  (running->pgdir[2048] & 0xFFFF0000);        // parent Umode PA
     CA =  (p->pgdir[2048] & 0xFFFF0000);              // child Umode PA
-    printf("FORK: child %d uimage at %x\n", p->pid, CA);
-    printf("copy Umode image from %x to %x\n", PA, CA);
-
+    // 2 MB
+    PA2 =  (running->pgdir[2049] & 0xFFFF0000);        // parent Umode PA
+    CA2 =  (p->pgdir[2049] & 0xFFFF0000);              // child Umode PA
+    
+    printf("FORK: child %d uimage 1MB at %x\n", p->pid, CA);
+    printf("copy Umode image 1MB from %x to %x\n", PA, CA);
     memcpy(CA, PA, 0x100000);                       // copy 1MB Umode image
+
+    printf("FORK: child %d uimage 2MB at %x\n", p->pid, CA2);
+    printf("copy Umode image 2MB from %x to %x\n", PA2, CA2);
+    memcpy(CA2, PA2, 0x100000);                       // copy 1MB Umode image
 
     // The hard part: child must resume to the same place as parent
     // Child kstack must contain | parent kstack | goUmode stack | => copy kstack
@@ -227,6 +235,7 @@ int exec(char *cmdline) // cmdline=VA in Uspace
     p->kstack[SSIZE - 1] = (int)VA(0); // return uLR = VA(0)
 
     kprintf("kexec exit\n");
+
     
     return p->usp;
 }
