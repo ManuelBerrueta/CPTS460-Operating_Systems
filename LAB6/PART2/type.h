@@ -63,6 +63,7 @@ typedef unsigned int   u32;
 #define PURPLE 5
 #define WHITE  6
 
+#define UIMAGE_SIZE 0x200000
 #define  SSIZE 1024
 #define  NPROC  9
 #define  FREE   0
