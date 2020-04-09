@@ -217,12 +217,17 @@ int exec(char *cmdline) // cmdline=VA in Uspace
         return -1;
     }
 
+    //! ORIGINAL GOOD
     // copy cmdline to high end of Ustack in Umode image
+    //usp = upa + 0x100000 - 128; // assume cmdline len < 128
+
+    //TODO: Adjusting
+    upa = (p->pgdir[2049] & 0xFFFF0000); // PA of Umode image
     usp = upa + 0x100000 - 128; // assume cmdline len < 128
     printf("usp=%x ", usp);
     strcpy((char *)usp, kline);
 
-    p->usp = (int *)VA(0x100000 - 128);
+    p->usp = (int *)VA(UIMAGE_SIZE - 128);
     printf("p->usp = %x ", p->usp);
     // fix syscall frame in kstack to return to VA=0 of new image
     
@@ -230,8 +235,8 @@ int exec(char *cmdline) // cmdline=VA in Uspace
     {
         p->kstack[SSIZE - i] = 0;
     }
-    
-    p->kstack[SSIZE - 14] = (int)VA(p->usp);
+    p->usp = (int *)VA(UIMAGE_SIZE - 128);
+    p->kstack[SSIZE - 14] = (int)VA(UIMAGE_SIZE - 128);
     p->kstack[SSIZE - 1] = (int)VA(0); // return uLR = VA(0)
 
     kprintf("kexec exit\n");
