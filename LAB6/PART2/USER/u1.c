@@ -5,6 +5,7 @@ int main(int argc, char *argv[])
     int i, pid, ppid, r;
     char line[64];
     char uc;
+    int p;
 
     for (i = 0; i < argc; i++)
     {
@@ -15,6 +16,8 @@ int main(int argc, char *argv[])
     {
         pid = getpid();
         ppid = getppid();
+
+        printf("\n&p=%x\n", &p);
         printf("This is process %d in Umode at %x parent=%d\n",
                pid, getPA(), ppid);
 

@@ -5,6 +5,7 @@ main(int argc, char *argv[ ])
   int pid, ppid, r;
   char line[64];
   int i;
+  int p;
 
   printf("argc=%d\n", argc);
   for (i=0; i<argc; i++)
@@ -13,7 +14,8 @@ main(int argc, char *argv[ ])
   while(1){
     pid = getpid();
     ppid = getppid();
-
+    
+    printf("\n&p=%x\n", &p);
     printf("DAS IST PROZESS %d IM USER-MODUS at %x ELTERN=%d\n", 
 	   pid, getPA(), ppid);
  
