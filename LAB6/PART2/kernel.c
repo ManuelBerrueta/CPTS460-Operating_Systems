@@ -92,7 +92,7 @@ Same as kfork() before EXCEPT:
    which causes p to return to Umode to execcute filename
 ***********************************************************/
 
-PROC *kfork(char *filename)
+PROC *kfork(char *cmdline)
 {
   int i, r; 
   int pentry, *ptable;
@@ -102,6 +102,18 @@ PROC *kfork(char *filename)
   int usize1, usize;
   int *ustacktop, *usp;
   u32 BA, Btop, Busp;
+  char kline[128], file[32], filename[32]; // tj
+  char *upa; // user mode PHYSICAL address
+
+  kstrcpy(kline, cmdline);
+
+  cp = kline; i=0;
+  while(*cp != ' ')
+  {
+     filename[i] = *cp;
+     i++; cp++;
+  }
+  filename[i] = 0;
 
   PROC *p = dequeue(&freeList);
   if (p==0){
@@ -109,7 +121,7 @@ PROC *kfork(char *filename)
     return (PROC *)0;
   }
 
-  printf("kfork %s\n", filename);
+  printf("kfork %s\n", cmdline);
   
   p->ppid = running->pid;
   p->parent = running;
@@ -118,10 +130,13 @@ PROC *kfork(char *filename)
 
   // build p's pgtable 
   uPtable(p);
+  printf("new%d pgdir[2048]=%x\n", p->pid, p->pgdir[2048]); 
 
-  printf("new Proc %d pgdir[2048]=%x\n", p->pid, p->pgdir[2048]);
-  printf("new Proc %d pgdir[2049]=%x\n", p->pid, p->pgdir[2049]);
- 
+  upa = p->pgdir[2049] & 0xFFFF0000;   // PA of 2nd 1MB begin
+  upa = upa + 0x100000 - 128;   // to high end of this 1MB then backward 128
+
+  strcpy(upa, cmdline);   // put a string  there
+  
   // set kstack to resume to goUmode, then to Umode image at VA=0
   for (i=1; i<29; i++)  // all 28 cells = 0
     p->kstack[SSIZE-i] = 0;
@@ -147,8 +162,6 @@ PROC *kfork(char *filename)
   p->cpsr = (int *)0x10;    // previous mode was Umode
 
   // must load filename to Umode image area at 8MB+(pid-1)*1MB
-
-  printf("==={ Loading %s image }===\n", filename);
   
   r = load(filename, p); // p->PROC containing pid, pgdir, etc
   if (r==0){
@@ -161,8 +174,11 @@ PROC *kfork(char *filename)
   // from PROC's point of view, it's a VA at 1MB (from its VA=0)
   
   //p->usp = (int *)VA(0x100000);  // usp->high end of 1MB Umode area
-  p->usp = (int *)VA(UIMAGE_SIZE);  // usp->high end of 2MB Umode area
+  p->usp = (int *)VA(0x200000 - 128);// I changed this to show main0 arguments//0x80200000;//= (int *)VA(0x200000); //added this
   p->kstack[SSIZE-1] = VA(0);    // upc = VA(0): to beginning of Umode area
+  p->kstack[SSIZE-14]= VA(0x200000 - 128); // I changed this to show main0 arguments//VA(0x200000-4); //added
+
+  //kstrcpy((char *)p->usp, kline);
 
   // -|-----goUmode---------------------------------
   //  r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 ufp uip upc|
@@ -176,3 +192,4 @@ PROC *kfork(char *filename)
 
   return p;
 }
+
