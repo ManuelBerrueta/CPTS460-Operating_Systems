@@ -91,16 +91,17 @@ Same as kfork() before EXCEPT:
    which causes p to return to Umode to execcute filename
 ***********************************************************/
 
-PROC *kfork(char *filename)
+PROC *kfork(char *cmdline)
 {
   int i, r; 
   int pentry, *ptable;
   char *cp, *cq;
   char *addr;
-  char line[8];
+  char line[8], kline[128], file[32], filename[32];
   int usize1, usize;
   int *ustacktop, *usp;
   u32 BA, Btop, Busp;
+  char * upa;
 
   PROC *p = dequeue(&freeList);
   if (p==0){
@@ -108,16 +109,31 @@ PROC *kfork(char *filename)
     return (PROC *)0;
   }
 
-  printf("kfork %s\n", filename);
+  printf("kfork %s\n", cmdline);
   
   p->ppid = running->pid;
   p->parent = running;
   p->status = READY;
   p->priority = 1;
 
+  kstrcpy(kline, cmdline);
+
+  cp = kline; i=0;
+  while(*cp != ' ')
+  {
+     filename[i] = *cp;
+     i++; cp++;
+  }
+  filename[i] = 0;
+
   // build p's pgtable 
   uPtable(p);
   printf("new%d pgdir[2048]=%x\n", p->pid, p->pgdir[2048]); 
+
+  upa = p->pgdir[2048] & 0xFFFF0000;   // 1MB begin
+  upa = upa + 0x100000 - 128;   // to high end of this 1MB then backward 128
+
+  strcpy(upa, cmdline);   // put a string  there
  
   // set kstack to resume to goUmode, then to Umode image at VA=0
   for (i=1; i<29; i++)  // all 28 cells = 0
@@ -157,8 +173,9 @@ PROC *kfork(char *filename)
   // we are in Kmode, p's ustack is at its Uimage (8mb+(pid-1)*1Mb) high end
   // from PROC's point of view, it's a VA at 1MB (from its VA=0)
   
-  p->usp = (int *)VA(0x100000);  // usp->high end of 1MB Umode area
+  p->usp = (int *)VA(0x100000 - 128);  // usp->high end of 1MB Umode area
   p->kstack[SSIZE-1] = VA(0);    // upc = VA(0): to beginning of Umode area
+  p->kstack[SSIZE-14]= VA(0x100000 - 128);
 
   // -|-----goUmode---------------------------------
   //  r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 ufp uip upc|

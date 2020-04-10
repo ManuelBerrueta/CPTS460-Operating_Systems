@@ -140,7 +140,7 @@ int main()
    kernel_init();
 
    unlock();
-   kfork("u1");
+   kfork("u1 init start");
    //kfork("u2");
    
    color = CYAN;
