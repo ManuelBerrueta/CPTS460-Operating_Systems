@@ -2,25 +2,24 @@
 
 #include "ucode.c"
 
-int main(int argc, char *argv[ ])
+int main(int argc, char *argv[])
 {
-  int i, fd, n;
-  char buf[1024];
-  
-  printf("KCW this is a test\n");
+    int i, fd, n;
+    char buf[1024];
 
-  printf("argc = %d\n", argc);
-  for (i=0; i<argc; i++)
-    printf("argv[%d] = %s\n", i, argv[i]);
+    printf("KCW this is a test\n");
 
-  fd = open("/etc/passwd", O_RDONLY);
-  printf("fd = %d\n", fd);
+    printf("argc = %d\n", argc);
+    for (i = 0; i < argc; i++)
+        printf("argv[%d] = %s\n", i, argv[i]);
 
-  n = read(fd, buf, 1024);
-  buf[n] = 0;
+    fd = open("/etc/passwd", O_RDONLY);
+    printf("fd = %d\n", fd);
 
-  printf("buf = %s\n", buf);
+    n = read(fd, buf, 1024);
+    buf[n] = 0;
 
-  close(fd);
-  
+    printf("buf = %s\n", buf);
+
+    close(fd);
 }
