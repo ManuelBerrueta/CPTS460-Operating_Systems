@@ -3,7 +3,7 @@
 #include "ucode.c"
 
 int in, out, err;
-char name[128], password[128], *eachword[64];
+char uname[128], password[128], *eachword[64];
 
 
 void pwd_token(char *line)
@@ -28,8 +28,8 @@ void pwd_token(char *line)
 
 int verifyCreds(int fd, char *name, char *passwd)
 {
-    char buf[1024] = 0;
-    char temp_line[512] = 0;
+    char buf[1024];
+    char temp_line[512];
     int user_flag = 0;
     int passwd_flag = 0;
     int i, n;
@@ -104,11 +104,11 @@ int main(int argc, char *argv[])
     while(1)
     {
         printf("login:> ");
-        gets(name);
+        gets(uname);
         printf("password:> ");
         gets(password);
 
-        n = verifyCreds(fd, name, password);
+        n = verifyCreds(fd, uname, password);
         
         if (n)
         {
