@@ -1,92 +1,52 @@
-// login.c file
-
 #include "ucode.c"
 
 int in, out, err;
-char uname[128], password[128], *eachword[64];
+char *token_passwd[16];
+char uname[128], password[128], buf[1024];
 
-
-void pwd_token(char *line)
+void tokenize_passwd(char *line)
 {
-  char *cp;
-  cp = line;
-  int i = 0;
-  
-  while (*cp != 0){
-       while (*cp == ':') *cp++ = 0;        
-       if (*cp != 0)
-           eachword[i++] = cp;         
-       while (*cp != ':' && *cp != 0) cp++;                  
-       if (*cp != 0)   
-           *cp = 0;                   
-       else 
-            break; 
-       cp++;
-  }
-  eachword[i] = 0;
-}
+    char *cp;
+    cp = line;
+    int i = 0;
 
-int verifyCreds(int fd, char *name, char *passwd)
-{
-    char buf[1024];
-    char temp_line[512];
-    int user_flag = 0;
-    int passwd_flag = 0;
-    int i, n;
-    int j = 0;
-    
-    n = read(fd, buf, 1024);
-    buf[n] = 0;
-
-    for (i=0 ; i < 1024; i++)
+    while (*cp != 0)
     {
-        //Check if the next char is null, if so then break
-        if (buf[i] == 0)
-        {
+        while (*cp == ':')
+            *cp++ = 0;
+        if (*cp != 0)
+            token_passwd[i++] = cp;
+        while (*cp != ':' && *cp != 0)
+            cp++;
+        if (*cp != 0)
+            *cp = 0;
+        else
             break;
-        }
-        // Split the lines when new line '\n' char is found within the buf
-        if (buf[i] == '\n')
-        {
-            temp_line[i] = 0;
-
-            pwd_token(temp_line);
-
-            if (strcmp(eachword[0], name) == 0)
-            {
-                user_flag = 1;
-            }
-            
-            if (strcmp(eachword[1], passwd) == 0)
-            {
-                passwd_flag = 1;
-            }
-
-            if (user_flag && passwd_flag)
-            {
-                printf("Credentials Verified!\n");
-                close(fd);
-                return 1;
-            }
-        }
-        // copy chars
-        temp_line[i] = buf[i];
+        cp++;
     }
-
-    return 0;
+    token_passwd[i] = 0;
 }
+
 
 int main(int argc, char *argv[])
 {
-    int i, fd, n, uid, gid;
-    char buf[1024];
+    int i, fd, uid, gid;
+    int tmp_line_index;
+    int next_line = 0;
+    int verified_creds = 0;
+    int n = 0;
+    int j = 0;
+    char temp_line[256];
 
+    // Close any old open file descriptors
     close(0);
     close(1);
+    close(2);
 
-    in  = open(argv[1], O_RDONLY);
-    out = open(argv[1], O_WRONLY);
-    err = open(argv[1], O_WRONLY);
+    // Open our own file descriptors
+    in = open(argv[1], 0);
+    out = open(argv[1], 1);
+    err = open(argv[1], 2);
     settty(argv[1]);
 
     fd = open("/etc/passwd", O_RDONLY);
@@ -98,34 +58,60 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-    printf("BERRLOGIN: open %s as in=0, out=1, err=2\n",  argv[1]);
+    n = read(fd, buf, 1024);
 
-
-    while(1)
+    while (1)
     {
-        printf("login:> ");
+        printf("Login:");
         gets(uname);
-        printf("password:> ");
+        printf("Password:");
         gets(password);
 
-        n = verifyCreds(fd, uname, password);
-        
-        if (n)
+        for (i = 0; i < n; i++)
         {
-            printf("BERRLOGIN SUCCESS\n");
-            //TODO: login success and execute shell
-            uid = atoi(eachword[3]);
-            gid = atoi(eachword[2]);
-            chuid(uid, gid);
-            chdir(eachword[5]);
-            printf("Spawning Shell\n");
-            exec("sh in out err");
-        }
-        else
-        {
-            printf("BERRLOGIN FAILED\nCheck credentials and try again\n");
-        }
-    }
+            //Check if the next char is null, if so then break
+            if (buf[i] == 0)
+            {
+                break;
+            }
+            if (buf[i] == '\n')
+            {
+                // We copy the current line in passwoprd  to our temp_line
+                // We must keep track of the curren position in the buf
+                j = 0;
+                for (tmp_line_index = next_line; tmp_line_index <= i; tmp_line_index++)
+                {
+                    temp_line[j] = buf[tmp_line_index];
+                    j++;
+                }
+                temp_line[j] = 0;
 
-    close(fd);
+                // Tokenize each line in passwd file
+                tokenize_passwd(temp_line);
+               
+                // Compare and verify that both the username and password match
+                // If they match we execute the rest of the login process
+                // and we execute the shell program
+                if ((strcmp(token_passwd[0], uname) == 0) && (strcmp(token_passwd[1], password) == 0))
+                {
+                    close(fd);
+                    
+                    printf("BERRLOGIN SUCCESS\n");
+                    
+                    uid = atoi(token_passwd[3]);
+                    gid = atoi(token_passwd[2]);
+                    chuid(uid, gid);
+                    chdir(token_passwd[5]);
+                    printf("Spawning Shell\n");
+                    
+                    exec("sh in out err");
+                
+                    break;
+                }
+                //next_line = i++; //This breaks it for some reason?!
+                next_line = i + 1;
+            }
+        }
+        next_line = 0;
+    }
 }

@@ -12,6 +12,7 @@ sudo umount /mnt
 
 rm $1
 rm *.o
+rm $1.elf
 
 
 
