@@ -26,7 +26,7 @@ int console, serial0, serial1;
             { // login child died
                 printf("BERR INIT %d: fork another login on console\n", pid);
                 console = fork();
-                if (console)
+                if (console) 
                 {
                     continue;
                 }

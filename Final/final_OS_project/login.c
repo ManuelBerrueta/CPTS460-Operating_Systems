@@ -44,11 +44,11 @@ int main(int argc, char *argv[])
     close(2);
 
     // Open our own file descriptors
-    in = open(argv[1], 0);
-    out = open(argv[1], 1);
-    err = open(argv[1], 2);
+    in  = open(argv[1], O_RDONLY);
+    out = open(argv[1], O_WRONLY);
+    err = open(argv[1], O_WRONLY);
     settty(argv[1]);
-
+    
     fd = open("/etc/passwd", O_RDONLY);
 
     if (fd <= 0)
