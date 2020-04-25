@@ -1,6 +1,6 @@
 #include "ucode.c"
 #define printk printf
-
+#define DEBUG 1
 
 int stdin, stdout, err;
 
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     //stdin  = open(argv[1], O_RDONLY);
     //stdout = open(argv[1], O_WRONLY);
     //err = open(argv[1], O_WRONLY);
-
+    
 
     //! Get user input
     while (1)
@@ -38,10 +38,22 @@ int main(int argc, char *argv[])
         //printf("[ %04d/%02d/%02d ] BERR Shell [ %s ]\n|-$ ", tm.tm_year + 1900, tm.tm_mon, tm.tm_mday, cwd);
         printf("BERR Shell [ %s ]-$ ", cwd);
         gets(buff);
-        //buff[strlen(buff) - 1] = 0; // *Get rid of '\n'
-        buff[strlen(buff)] = 0; // *Get rid of '\n'
+        
+        // Check and get rid of '\n'
+        if (buff[strlen(buff) - 1] == '\n')
+            buff[strlen(buff) - 1] = 0; // *Get rid of '\n'
+        //buff[strlen(buff)] = 0; // *Get rid of '\n'
         strcpy(parseBuff, buff);
         printf("COMMAND = [%s]\n", parseBuff);
+
+        //TODO: LAST Take care of the case where buff 0 == "" an empty string
+        /* if( (strlen(buff) == 0) || (strcmp(buff, "") == 0) || (buff[0] == " "))
+        {
+            continue;
+        } else {
+
+            //Everything else in main goes here
+        } */
 
         while (buff[i] != '\0')
         {
@@ -92,7 +104,7 @@ int main(int argc, char *argv[])
         else
         {
             //! If is not cd or exit check for pipes
-            //TODO: Check for pipes & run command
+            //* Check for pipes & run command
             pipeCheck(buff);
         }
     }
@@ -112,8 +124,11 @@ int executeCommand(char buff[])
     int stdoutAppen = 0;
     char redirectName[64] = {0};
     const char path[512] = {0};
-    char *myargv[246] = {0}; //! TODO: MAY NEED TO REPLACE this with one passed in?
+    char *myargv[246] = {0}; //? MAY NEED TO REPLACE this with one passed in?
     char command[16];        //? Command string
+
+    strcpy(tempArg, buff); //TODO: if argcounter ==1 just run tempArg
+
 
     //! (Count number of spaces, check for redirection and pipes
     while (buff[i] != '\0')
@@ -134,7 +149,8 @@ int executeCommand(char buff[])
 
                 j = i + 3;
                 int k = 0;
-                //TODO: Do the string copy here & clean buff string
+                
+                //* Do the string copy here & clean buff string
                 while (buff[j] != '\0')
                 {
                     redirectName[k++] = buff[j];
@@ -152,7 +168,7 @@ int executeCommand(char buff[])
                 buff[i + 1] = 0; //!Gets rid of the space ' '
                 j = i + 2;
                 k = 0;
-                //TODO: Do the string copy here & clean buff string
+                //* Do the string copy here & clean buff string
                 while (buff[j] != '\0')
                 {
                     redirectName[k++] = buff[j];
@@ -170,7 +186,7 @@ int executeCommand(char buff[])
                 buff[i + 1] = 0; //!Gets rid of the space ' '
                 j = i + 2;
                 int k = 0;
-                //TODO: Do the string copy here & clean buff string
+                //* Do the string copy here & clean buff string
                 while (buff[j] != '\0')
                 {
                     redirectName[k++] = buff[j];
@@ -180,13 +196,21 @@ int executeCommand(char buff[])
         }
         i++;
     }
-
     i = 0;
+
+    if(DEBUG)
+        printf("argcounter %d\n", argcounter);
+        printf("buff=%s\n", buff);
+        getc();
+  
     //! Tokenize command and parameters
     memset(command, 0, sizeof(command));
+
     strcpy(command, strtok(buff, " "));
+    //* Put the command as the first string in myargv
     myargv[i] = command;
     i++;
+
     if (argcounter > 0)
     {
         while (i <= argcounter)
@@ -197,8 +221,12 @@ int executeCommand(char buff[])
         i = 0;
     }
 
-    argcounter = 0;
-    //! Count Number Of Paths
+
+
+    //! This code is not needed for Wanix
+
+    //argcounter = 0;
+    /* //! Count Number Of Paths
     while (path[i] != '\0')
     {
         if (path[i] == ':')
@@ -211,7 +239,7 @@ int executeCommand(char buff[])
     i = 0;
     //! Tokenize paths
     char commpath[64];
-    pathNames[i] = strtok(path, ":");
+    pathNames[i] = strtok(path, ":"); */
 
     i = 0; //* Reset counter
 
@@ -242,28 +270,26 @@ int executeCommand(char buff[])
             //!=========== IO REDIRECTION ==================================
             int fd = 0;
 
-            //TODO: Split the command after <, >, or >>
-            if (stdinFlag > 0)
+            if (stdinFlag > 0) // Split the command after <, >, or >>
             {
                 close(0); //! Close file descriptor 1, stdin
                 open(redirectName, O_RDONLY);
             }
-            else if (stdoutFlag > 0)
+            else if (stdoutFlag > 0) //Split command from i forward
             {
-                //TODO: Split command from i forward
                 close(1); //! Close file descriptor 1, stdout
                 open(redirectName, O_WRONLY | O_CREAT);
             }
-            else if (stdoutAppen > 0)
+            else if (stdoutAppen > 0) //Split command from i forward
             {
-                //TODO: Split command from i forward
                 close(1); //! Close file descriptor 1, stdout
                 open(redirectName, O_RDWR | O_APPEND);
             }
             //!=============== END IO REDIRECTION ==========================
 
             //strcat(tempPath, command); //! concat tempPath and command
-            printf("Prior to exec tempPath %s\n", tempPath);
+            //printf("Prior to exec tempPath %s\n", tempPath);
+            printf("Prior to exec tempPath %s\n", command);  // TODO: NEW CHANGE Sat 4-25
             int j = 0;
             int k = 0;
 
@@ -281,7 +307,13 @@ int executeCommand(char buff[])
                 }
                 else
                 {
-                    r = exec(tempPath);
+                    //r = exec(tempPath);
+                    if(argcounter)
+                    {
+                        r = exec(tempArg);
+                    } else {
+                        r = exec(command); // TODO: NEW CHANGE Sat 4-25
+                    }
                 }
             }
             printf("After exec tempPath %s\n", tempPath);
@@ -294,7 +326,7 @@ int executeCommand(char buff[])
         exit(100);
     }
     i = 0; //* Reset counter
-    //TODO: RESET Redirection
+    //! RESET Redirection
     stdinFlag = 0;
     stdoutAppen = 0;
     stdoutFlag = 0;
@@ -308,7 +340,7 @@ int pipeCheck(char buff[])
     int k = 0;
     char nextBuff[256] = {0};
 
-    //TODO: If pipe is found:
+    //* If pipe is found:
     //! Parse the first buff
     //! Create a pipe
     //!
@@ -316,25 +348,27 @@ int pipeCheck(char buff[])
     //! While the buff is not NULL
     while (buff[i] != '\0')
     {
-        if (buff[i] == '|') //TODO: HERE I AM
+        if (buff[i] == '|')
         {
             pipeFlag = 1;
-            //TODO: Copy rest of string to pass to the next pipe
-            //TODO: break and create pipe, else run the exec function passing in original buff
+            //* Copy rest of string to pass to the next pipe
+            //* break and create pipe, else run the exec function passing in original buff
 
             //!Clear buff of the pipe
             buff[i] = 0;     //! Gets rid of '|'
             buff[i + 1] = 0; //!Gets rid of the space ' '
+            
             j = i + 2;
+            
             k = 0;
-            //TODO: Do the string copy here & clean buff string
+            //* Do the string copy here & clean buff string
             while (buff[j] != '\0')
             {
                 nextBuff[k] = buff[j];
                 buff[j++] = 0; //!delete the rest of none command chars
                 k++;
             }
-            //TODO: We could strtok until | for the buff until then
+            //* We could strtok until | for the buff until then
         }
         i++;
     }
@@ -360,16 +394,27 @@ int pipeCheck(char buff[])
 
             // fork a child to share the pipe
             printf("parent %d close pd[0]\n", getpid());
+            close(1);
             close(pd[0]); //Writer close pd[]0
-
-            dup2(pd[1], 1);
+            
+            printf("\n");  //fflush(stdout);
+            
+            //dup2(pd[1], 1);
+            dup(pd[1]);
             close(pd[1]);
 
             //!Execute using current cleaned up buff / "command"
+
+            printf("\n Inside parent pipe, command to be ran is buff=%s\n", buff);
+            //getc();
+
             executeCommand(buff);
+            //executeCommand(nextBuff);
             dup2(saved_stdout, 1);
             close(saved_stdout);
 
+            printf("\n");  //fflush(stdout);
+            
             pid = wait(&status);
 
             printf("parent %d exit\n", getpid());
@@ -379,22 +424,36 @@ int pipeCheck(char buff[])
             printf("child %d close pd[1]\n", getpid());
 
             int saved_stdin = dup(0);
+            close(0);
             close(pd[1]);
             // child as pipe READER
-            close(0);
-            //fflush(stdout);
-            dup2(pd[0], 0);
+            //close(0);
+            
+            printf("\n");  //fflush(stdout);
+            
+            //dup2(pd[0], 0);
+            dup(pd[0]);
+            //close(pd[0]);
             close(pd[0]);
 
+            printf("\n Inside child pipe, command to be ran is nextBuff=%s\n", nextBuff);
+            //getc();
+
             pipeCheck(nextBuff);
+            //pipeCheck(buff);
             dup2(saved_stdin, 0);
             close(saved_stdin);
 
+            printf("\n");  //fflush(stdout);
+            
             exit(100);
+            return 1;
         }
     }
     else
     {
+        printf("In pipecheck, prior to executeCommand, buff=%s  and ", buff);
+        //! Up to here we are good!
         executeCommand(buff);
     }
 }
