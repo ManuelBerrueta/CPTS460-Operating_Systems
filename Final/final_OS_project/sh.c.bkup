@@ -395,7 +395,7 @@ int pipeCheck(char buff[])
             // fork a child to share the pipe
             printf("parent %d close pd[0]\n", getpid());
             close(1);
-            //close(pd[0]); //Writer close pd[]0
+            close(pd[0]); //Writer close pd[]0
             
             printf("\n");  //fflush(stdout);
             
@@ -425,7 +425,7 @@ int pipeCheck(char buff[])
 
             int saved_stdin = dup(0);
             close(0);
-            //close(pd[1]);
+            close(pd[1]);
             // child as pipe READER
             //close(0);
             
