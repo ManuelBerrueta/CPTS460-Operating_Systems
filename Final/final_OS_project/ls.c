@@ -1,112 +1,148 @@
 // test.c file
 
 #include "ucode.c"
+#define printk printf
+/* * * * * * * * * * * * * * * * * * * * * * * * * * 
+ * Code from 8.6.7 - The ls Program by K.C. Wang   *
+ * from his book Systems Programming in Unix/Linux *
+ * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-char gpath[256];
+struct stat mystat, *sp;
+char *t1 = "xwrxwrxwr-------";
+char *t2 = "----------------";
 
-
-int tokenize(char *pathname)
+int ls_file(char *fname)
 {
-    // tokenize pathname in GLOBAL gpath[]; pointer by name[i]; n tokens
-    int numOfComponents =0;
-    strcpy(gpath, pathname);
-    
-    if(pathname == 0)
+    struct stat fileStat, *sp;
+    int r, i;
+    char ftime[64];
+    char buff[4096];
+    sp = &fileStat;
+    //if ((r = lstat(fname, &fileStat)) < 0)
+    if ((r = fstat(fname, &fileStat)) < 0)
     {
-        printf("NULL STRING - Can't Tokenize Empty String!\n\n");
-        return -1;
+        printf("can’t stat %s\n", fname);
+        exit(1);
     }
-
-    if( strcmp(gpath, "/") == 0)
+    if ((sp->st_mode & 0xF000) == 0x8000) // if (S_ISREG())
+        printf("%c",'-');
+    if ((sp->st_mode & 0xF000) == 0x4000) // if (S_ISDIR())
+        printf("%c",'d');
+    if ((sp->st_mode & 0xF000) == 0xA000) // if (S_ISLNK())
+        printf("%c",'l');
+    for (i = 8; i >= 0; i--)
     {
-        printf("Looking to LS root inode\n");
-        name[numOfComponents++] = gpath;
-        return;
-    }
-
-    char* tempPath;
-    name[numOfComponents++] = strtok(pathname, "/");
-
-    while((tempPath = strtok(NULL, "/")))
-    {
-        name[numOfComponents++] = tempPath;
-    }
-
-    return numOfComponents;
-}
-
-
-INODE *path2inode(INODE *ip, char pathName[], int inodes_start)
-{
-    int i = 0;
-    int numOfComponents = 0;
-
-    if (pathName[0] != 0) //* If a pathname was passed
-    {
-        //* Tokenize path
-        numOfComponents = tokenize(pathName);
-        int j = 0;
-
-        //TODO:For debugging only
-        printf("Tokenized path:> ");
-        while (j < numOfComponents)
+        if (sp->st_mode & (1 << i)) // print r|w|x
         {
-            printf("/%s", name[j++]);
-            fflush(stdout);
+            printf("%c", t1[i]);
         }
-        puts("");
-        //TODO: Search will go here --!NOTE: may need to do ip
-        int ino, blk, offset;
-        int n = numOfComponents;
-
-        for (i = 0; i < n; i++)
+        else
         {
-            ino = search(ip, name[i]);
-
-            if (ino == 0)
-            {
-                printf("can't find %s\n", name[i]);
-                exit(1);
-            }
-            // Mailman's algorithm: Convert (dev, ino) to INODE pointer
-            blk = (ino - 1) / 8 + inodes_start;
-            offset = (ino - 1) % 8;
-            get_block(dev, blk, buf);
-            ip = (INODE *)buf + offset; // ip -> new INODE
+            printf("%c", t2[i]);
         }
-        //*Print information out of current ip
-        printIPinfo(name[i - 1], ip);
-        show_dir(ip);
-        return ip;
+        // or print -
+    }
+
+    printf("%4d ", sp->st_nlink);   // link count
+    printf("%4d ", sp->st_gid);     // gid
+    printf("%4d ", sp->st_uid);     // uid
+    printf("%8d ", sp->st_size);    // file size
+    //fflush(stdout);
+
+    // print time
+    //strcpy(ftime, ctime(&sp->st_ctime)); // print time in calendar form
+    //ftime[strlen(ftime) - 1] = 0;   // kill \n at end
+    //printf("%s ", ftime);
+    // print name
+    /* char tempBasename[64]= "";
+
+    if( (strcmp(fname, ".") == 0) || (strcmp(fname, "..") == 0))
+    {   
+        printf("%s", fname); // print linked name
     }
     else
     {
-        //show_dir(ip);
-        show_dir(running->cwd);
+        strcpy(tempBasename, fname);
+        printf("%s", basename(tempBasename)); // print file basename
+    } */
+    printf("%s ", fname);
+    
+    // print -> linkname if symbolic file
+    if ((sp->st_mode & 0xF000) == 0xA000)
+    {
+       //TODO: Added this code, was not provided. Needs checking.
+       // use readlink() to read linkname
+        //readlink(sp, buff, 40); 
+        readlink(sp, buff); 
+        printf(" -> %s", buff); // print linked name
+    }
+    printf("\n");
+}
+
+
+int ls_dir(char *dname) //! From 8.6.5
+{
+
+    struct ext2_dir_entry_2 *ep;
+    int dir_fd = 0;
+    char dirBuf[1024] = { 0 };
+
+    dir_fd = open(dname, O_RDONLY);
+    
+    while (ep = read(dir_fd, dirBuf, 1024))
+    {
+        //printf("name=%s ", ep->d_name);
+        //TODO: if the path is just / don't come here!
+        //ls_file(ep->d_name);
+        //ls_file(dname);
+        printf("%s\n", ep->name);
+        //fflush(stdout);
     }
 }
 
 
-int list_file(char *pathname, int inode_start)
+int S_ISDIR(u16 mode)
 {
-    printf("list_file()\n");
-
-    root->INODE.i_block[12]; //This is how you access inodes!
-    //show_dir(&(root->INODE));
-    path2inode(&(root->INODE), pathname, inode_start);
+    if ((mode & 0xF000) == 0x4000)
+    {
+        return 1;
+    }
 }
 
 
 int main(int argc, char *argv[])
 {
-    int i, fd, n;
-    char buf[1024];
-
-    printf("ls: this is a test\n");
-
-    printf("argc = %d\n", argc);
-    for (i = 0; i < argc; i++)
-        printf("argv[%d] = %s\n", i, argv[i]);
-
+    struct stat mystat, *sp = &mystat;
+    int r;
+    char *filename, path[1024], cwd[256];
+    filename = "./";
+    // default to CWD
+    if (argc > 1)
+    {
+        filename = argv[1]; // if specified a filename
+    }
+    //if (r = lstat(filename, sp) < 0)
+    if (r = stat(filename, sp) < 0)
+    {
+        printf("no such file %s\n", filename);
+        exit(1);
+    }
+    strcpy(path, filename);
+    if (path[0] != '/') // Then filename is relative : get CWD path
+    { 
+        //getcwd(cwd, 256);
+        getcwd(cwd);
+        strcpy(path, cwd);
+        strcat(path, "/");
+        strcat(path, filename);
+    }
+    if (S_ISDIR(sp->st_mode))
+    {
+        ls_dir(path);
+    }
+    else
+    {
+        ls_file(path);
+    }
 }
