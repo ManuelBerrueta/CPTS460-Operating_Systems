@@ -1,7 +1,7 @@
 #include "ucode.c"
 #define printk printf
 
-int grep(char *pattern, char *buff)
+int grep(char *pattern, char *buff, int fd)
 {
     int i = 0, j = 0, tempStrSize = 0, grepSize = 0;
     tempStrSize = strlen(buff);
@@ -28,7 +28,7 @@ int grep(char *pattern, char *buff)
 int main(int argc, char *argv[])
 {
     char tempStr[1024] = { 0 }, grepStr[1024] = { 0 }, searchStr[1024] = { 0 };
-    int i = 0, j = 0, k = 0, tempStrSize = 0, grepSize = 0, fd = 0, n = 0;
+    int i = 0, j = 0, k = 0, tempStrSize = 0, grepSize = 0, fd = 1, n = 0;
     int filePosTracker = 0;
 
     printf(">>>>>>>>{ BERRNIX grep }<<<<<<<<\n");
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
             {
                 printf("%s\n", tempStr);
             } else {
-                grep(grepStr, tempStr);
+                grep(grepStr, tempStr, fd); //fd=1 is stdout
             }
         }
     }
@@ -81,16 +81,17 @@ int main(int argc, char *argv[])
             }
 
 
-            grep(grepStr, searchStr);
+            grep(grepStr, searchStr, fd);
 
             // Use lseek to put us back where we broke off the current stream
             lseek(fd, filePosTracker, 0);
         }
         //TODO: open a file and look for pattern
+        exit(0);
 
     } else {
         printf("ERROR: argc=%d, grep requires at least 1 or 2 args only!\n ", argc);
     }
-
+    exit(0);
     return 0;
 }
