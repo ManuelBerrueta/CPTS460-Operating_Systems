@@ -15,6 +15,7 @@ int grep(char *pattern, char *buff, int fd)
             if (j == grepSize)
             {
                 printf("%s\n", buff);
+                //write(fd, buff, strlen(buff));
                 j=0;
                 break;
             }
