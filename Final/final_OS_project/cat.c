@@ -9,7 +9,6 @@ int main(int argc, char *argv[])
 
     printf(">>>>>>>>{ BERRNIX CAT }<<<<<<<<\n");
 
-    //if ((argc == 1) || (fileName == 0) || (strcmp(fileName, "") == 0) || (strcmp(fileName, " ") == 0))
     if (argc == 1)
     {
         while (1)

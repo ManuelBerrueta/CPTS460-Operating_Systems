@@ -390,64 +390,121 @@ int pipeCheck(char buff[])
 
         if (pid)
         {
-            int saved_stdout = dup(1); //!Saved stdout file descriptor
-
             // fork a child to share the pipe
-            printf("parent %d close pd[0]\n", getpid());
-            close(1);
-            //close(pd[0]); //Writer close pd[]0
-            
-            printf("\n");  //fflush(stdout);
-            
-            //dup2(pd[1], 1);
-            dup(pd[1]);
-            close(pd[1]);
-
+            //printf("parent %d close pd[1]\n", getpid());
             //!Execute using current cleaned up buff / "command"
+            //printf("\n Inside parent pipe, command to be ran is buff=%s\n", buff);
 
-            printf("\n Inside parent pipe, command to be ran is buff=%s\n", buff);
-            //getc();
+            // For combo#1
+            int saved_stdout = dup(0); //!Saved stdout file descriptor
+            close(0);
 
-            executeCommand(buff);
-            //executeCommand(nextBuff);
-            dup2(saved_stdout, 1);
+            //!Combo #1
+            close(pd[1]); //Writer close pd[]0
+            dup2(pd[0], 0);
+            pipeCheck(nextBuff);
+
+            //for combo #1
+            dup2(saved_stdout, 0);
             close(saved_stdout);
 
-            printf("\n");  //fflush(stdout);
-            
-            pid = wait(&status);
+            //!Combo #2 //This one does seem backs wards
+            //close(pd[1]); //Writer close pd[]0
+            //dup2(pd[0], 0);
+            //executeCommand(buff);
 
-            printf("parent %d exit\n", getpid());
+            //!Combo #3
+            //close(pd[0]); //Writer close pd[]0
+            //dup2(pd[1], 1);
+            //executeCommand(buff);
+
+            //!Combo #4 Bad Error!
+            //close(pd[0]); //Writer close pd[]0
+            //dup2(pd[1], 1);
+            //pipeCheck(nextBuff);
+
+            //!Combo #5 // seemedbackwards
+            //close(pd[1]); //Writer close pd[]0
+            ////dup2(pd[0], 0);
+            //dup(pd[0]);
+            //pipeCheck(nextBuff);
+
+            //!Combo #6 // seemedbackwards
+            //close(pd[1]); //Writer close pd[]0
+            ////dup2(pd[0], 0);
+            //dup(pd[0]);
+            //executeCommand(buff);
+
+            //!Combo #7 // seemedbackwards
+            //close(pd[1]); //Writer close pd[]0
+            //close(1);
+            ////dup2(pd[0], 0);
+            //dup(pd[0]);
+            //executeCommand(buff);
+
+            //pid = wait(&status);
+            //printf("parent %d exit\n", getpid());
+            //exit(100);
+            //return 0;
+
+            pid = wait(&status);
         }
         else
         {
-            printf("child %d close pd[1]\n", getpid());
+            //printf("child %d close pd[1]\n", getpid());
+            //printf("\n Inside child pipe, command to be ran is nextBuff=%s\n", nextBuff);
 
-            int saved_stdin = dup(0);
-            close(0);
-            //close(pd[1]);
-            // child as pipe READER
-            //close(0);
-            
-            printf("\n");  //fflush(stdout);
-            
-            //dup2(pd[0], 0);
-            dup(pd[0]);
-            //close(pd[0]);
+            // for combo #!
+            int saved_stdin = dup(1);
+            close(1);
+
+            //! Combo #1
             close(pd[0]);
+            dup2(pd[1], 1);
+            executeCommand(buff);
+            
 
-            printf("\n Inside child pipe, command to be ran is nextBuff=%s\n", nextBuff);
-            //getc();
-
-            pipeCheck(nextBuff);
-            //pipeCheck(buff);
-            dup2(saved_stdin, 0);
+            // for combo#1
+            dup2(saved_stdin, 1);
             close(saved_stdin);
 
-            printf("\n");  //fflush(stdout);
+            //! Combo #2  //This one does seem backs wards
+            //close(pd[0]);
+            //dup2(pd[1], 1);
+            //pipeCheck(nextBuff);
+
+            //! Combo #3 
+            //close(pd[1]);
+            //dup2(pd[0], 0);
+            //pipeCheck(nextBuff);
+
+            //! Combo #4 
+            //close(pd[1]);
+            //dup2(pd[0], 0);
+            //executeCommand(buff);
+
+            //! Combo #5 //Seemed backwards
+            //close(pd[0]);
+            ////dup2(pd[1], 1);
+            //dup(pd[1]);
+            //executeCommand(buff);
+
+            //! Combo #6 //Seemed backwards
+            //close(pd[0]);
+            ////dup2(pd[1], 1);
+            //dup(pd[1]);
+            //pipeCheck(nextBuff);
+
+            //! Combo #7 //Seemed backwards
+            //close(pd[0]);
+            //close(0);
+            ////dup2(pd[1], 1);
+            //dup(pd[1]);
+            //pipeCheck(nextBuff);
             
+            
+
             exit(100);
-            return 1;
         }
     }
     else
