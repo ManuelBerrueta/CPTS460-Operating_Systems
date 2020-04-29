@@ -19,13 +19,6 @@ int main(int argc, char *argv[])
     int argcounter = 0;
     char tempStr[128] = {0};
 
-    //close(0);
-    //close(1);
-
-    //stdin  = open(argv[1], O_RDONLY);
-    //stdout = open(argv[1], O_WRONLY);
-    //err = open(argv[1], O_WRONLY);
-    
 
     //! Get user input
     while (1)
@@ -105,7 +98,15 @@ int main(int argc, char *argv[])
         {
             //! If is not cd or exit check for pipes
             //* Check for pipes & run command
-            pipeCheck(buff);
+            int local_pid  = fork();
+            if(local_pid)
+            {
+                int local_status = 0;
+                local_pid = wait(&local_status);
+                printf("local_pid %d terminated with exit(%d)\n", local_pid, local_status);
+            } else {
+                pipeCheck(buff);
+            }
         }
     }
     return 0;
@@ -222,25 +223,6 @@ int executeCommand(char buff[])
     }
 
 
-
-    //! This code is not needed for Wanix
-
-    //argcounter = 0;
-    /* //! Count Number Of Paths
-    while (path[i] != '\0')
-    {
-        if (path[i] == ':')
-        {
-            argcounter++;
-        }
-        i++;
-    }
-    argcounter++; //! for the last path without ":"
-    i = 0;
-    //! Tokenize paths
-    char commpath[64];
-    pathNames[i] = strtok(path, ":"); */
-
     i = 0; //* Reset counter
 
     //! Attempt running exec with appending a path each name
@@ -250,86 +232,72 @@ int executeCommand(char buff[])
     int r = -1;
     int status = 0;
 
-    int pid = fork();
-    if (pid)
+    while (1)
     {
-        printf("\n======> PARENT=%d WAITS for CHILD=%d to DIE <======\n", getpid(), pid);
-        pid = wait(&status);
-        printf("\n======> DEAD CHILD=%d, STATUS=0x%04x <======\n\n", pid, status);
-    }
-    else
-    {
-        printf("%s\n", tempPath);
-        // getchar();
-        printf("CHILD=%d STARTED | My PARENT=%d\n", getpid(), getppid());
+        //!=========== IO REDIRECTION ==================================
+        int fd = 0;
 
-        strcat(tempPath, command); //! concat tempPath and command
-        //while (r == -1)
-        while (1)
+        if (stdinFlag > 0) // Split the command after <, >, or >>
         {
-            //!=========== IO REDIRECTION ==================================
-            int fd = 0;
-
-            if (stdinFlag > 0) // Split the command after <, >, or >>
-            {
-                close(0); //! Close file descriptor 1, stdin
-                open(redirectName, O_RDONLY);
-            }
-            else if (stdoutFlag > 0) //Split command from i forward
-            {
-                close(1); //! Close file descriptor 1, stdout
-                open(redirectName, O_WRONLY | O_CREAT);
-            }
-            else if (stdoutAppen > 0) //Split command from i forward
-            {
-                close(1); //! Close file descriptor 1, stdout
-                open(redirectName, O_RDWR | O_APPEND);
-            }
-            //!=============== END IO REDIRECTION ==========================
-
-            //strcat(tempPath, command); //! concat tempPath and command
-            //printf("Prior to exec tempPath %s\n", tempPath);
-            printf("Prior to exec tempPath %s\n", command);  // TODO: NEW CHANGE Sat 4-25
-            int j = 0;
-            int k = 0;
-
-            //! Check for shell file, otherwise try to run command
-            char fileCheckBuff[8];
-            //FILE *fp = fopen(tempPath, "r");
-            int fp = open(tempPath, O_RDONLY);
-            if (fp != NULL)
-            {
-                //fread(fileCheckBuff, sizeof(char), 4, fp);
-                read(fp, fileCheckBuff, 8);
-                if (memcmp(fileCheckBuff, "!#/b", 4) == 0)
-                {
-                    exec("/bin/sh");
-                }
-                else
-                {
-                    //r = exec(tempPath);
-                    if(argcounter)
-                    {
-                        r = exec(tempArg);
-                    } else {
-                        r = exec(command); // TODO: NEW CHANGE Sat 4-25
-                    }
-                }
-            }
-            printf("After exec tempPath %s\n", tempPath);
-            memset(tempPath, 0, sizeof(tempPath)); // *RESET command
-            strcpy(tempPath, pathNames[++i]);
-            strcat(tempPath, "/");
-            strcat(tempPath, command); //! concat tempPath and command
-            printf("After new tempPath: %s\n", tempPath);
+            close(0); //! Close file descriptor 1, stdin
+            open(redirectName, O_RDONLY);
         }
-        exit(100);
+        else if (stdoutFlag > 0) //Split command from i forward
+        {
+            close(1); //! Close file descriptor 1, stdout
+            open(redirectName, O_WRONLY | O_CREAT);
+        }
+        else if (stdoutAppen > 0) //Split command from i forward
+        {
+            close(1); //! Close file descriptor 1, stdout
+            open(redirectName, O_RDWR | O_APPEND);
+        }
+        //!=============== END IO REDIRECTION ==========================
+
+        //strcat(tempPath, command); //! concat tempPath and command
+        //printf("Prior to exec tempPath %s\n", tempPath);
+        printf("Prior to exec tempPath %s\n", command);  // TODO: NEW CHANGE Sat 4-25
+        int j = 0;
+        int k = 0;
+
+        //! Check for shell file, otherwise try to run command
+        char fileCheckBuff[8];
+        //FILE *fp = fopen(tempPath, "r");
+        int fp = open(tempPath, O_RDONLY);
+        if (fp != NULL)
+        {
+            //fread(fileCheckBuff, sizeof(char), 4, fp);
+            read(fp, fileCheckBuff, 8);
+            if (memcmp(fileCheckBuff, "!#/b", 4) == 0)
+            {
+                exec("/bin/sh");
+            }
+            else
+            {
+                //r = exec(tempPath);
+                if(argcounter) 
+                {
+                    r = exec(tempArg);
+                } else {
+                    r = exec(command); // TODO: NEW CHANGE Sat 4-25
+                }
+            }
+        }
+        printf("After exec tempPath %s\n", tempPath);
+        memset(tempPath, 0, sizeof(tempPath)); // *RESET command
+        strcpy(tempPath, pathNames[++i]);
+        strcat(tempPath, "/");
+        strcat(tempPath, command); //! concat tempPath and command
+        printf("After new tempPath: %s\n", tempPath);
+        myargv[i] = strtok(NULL, " ");
     }
+  
     i = 0; //* Reset counter
     //! RESET Redirection
-    stdinFlag = 0;
-    stdoutAppen = 0;
-    stdoutFlag = 0;
+    //stdinFlag = 0;
+    //stdoutAppen = 0;
+    //stdoutFlag = 0;
+    exit(100);
 }
 
 int pipeCheck(char buff[])
@@ -355,8 +323,9 @@ int pipeCheck(char buff[])
             //* break and create pipe, else run the exec function passing in original buff
 
             //!Clear buff of the pipe
+            buff[i - 1] = 0; //! clear space before the pipe
             buff[i] = 0;     //! Gets rid of '|'
-            buff[i + 1] = 0; //!Gets rid of the space ' '
+            buff[i + 1] = 0; //!Gets rid of the space ' ' after the pipe
             
             j = i + 2;
             
@@ -396,17 +365,26 @@ int pipeCheck(char buff[])
             //printf("\n Inside parent pipe, command to be ran is buff=%s\n", buff);
 
             // For combo#1
-            int saved_stdout = dup(0); //!Saved stdout file descriptor
-            close(0);
+            //int saved_stdout = dup(0); //!Saved stdout file descriptor
+            //close(0);
 
             //!Combo #1
-            close(pd[1]); //Writer close pd[]0
-            dup2(pd[0], 0);
-            pipeCheck(nextBuff);
+            close(pd[0]); //Writer close pd[]0 //Write as as the parent close the reader
+            close(1);
+            dup(pd[1]);
+            close(pd[1]);
+            
+            executeCommand(buff);
+            
+            int status = 0;
+            pid = wait(&status);
+
+            printf("\nChild process with %d exit(%d)\n", pid, status);
+            
 
             //for combo #1
-            dup2(saved_stdout, 0);
-            close(saved_stdout);
+            //dup2(saved_stdout, 0);
+            //close(saved_stdout);
 
             //!Combo #2 //This one does seem backs wards
             //close(pd[1]); //Writer close pd[]0
@@ -447,26 +425,28 @@ int pipeCheck(char buff[])
             //exit(100);
             //return 0;
 
-            pid = wait(&status);
+            //pid = wait(&status);
         }
-        else
+        else //pid == 0
         {
             //printf("child %d close pd[1]\n", getpid());
             //printf("\n Inside child pipe, command to be ran is nextBuff=%s\n", nextBuff);
 
             // for combo #!
-            int saved_stdin = dup(1);
-            close(1);
+            //int saved_stdin = dup(1);
+            //close(1);pipeCheck(nextBuff);
 
             //! Combo #1
+            close(pd[1]);
+            close(0);
+            dup(pd[0]);
             close(pd[0]);
-            dup2(pd[1], 1);
-            executeCommand(buff);
             
+            pipeCheck(nextBuff);
 
             // for combo#1
-            dup2(saved_stdin, 1);
-            close(saved_stdin);
+            //dup2(saved_stdin, 1);
+            //close(saved_stdin);
 
             //! Combo #2  //This one does seem backs wards
             //close(pd[0]);
@@ -502,9 +482,7 @@ int pipeCheck(char buff[])
             //dup(pd[1]);
             //pipeCheck(nextBuff);
             
-            
-
-            exit(100);
+            //exit(100);
         }
     }
     else
