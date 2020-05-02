@@ -1,6 +1,8 @@
 #include "ucode.c"
 #define printk printf
 
+int in, out, err;
+
 int grep(char *pattern, char *buff, int fd)
 {
     int i = 0, j = 0, tempStrSize = 0, grepSize = 0;
@@ -19,6 +21,10 @@ int grep(char *pattern, char *buff, int fd)
                 j=0;
                 break;
             }
+        }
+        else if(buff[i] == pattern[j - 1] && j == 1)
+        {
+            continue;
         } else {
             j = 0;
         }
@@ -26,10 +32,19 @@ int grep(char *pattern, char *buff, int fd)
 }
 
 
+//Changed fd = 1, to fd = 0, changed gets(tempStr) to read
+
 int main(int argc, char *argv[])
 {
     char tempStr[1024] = { 0 }, grepStr[1024] = { 0 }, searchStr[1024] = { 0 };
-    int i = 0, j = 0, k = 0, tempStrSize = 0, grepSize = 0, fd = 1, n = 0;
+    int i = 0, j = 0, k = 0, tempStrSize = 0, grepSize = 0, fd = 0, n = 0;
+
+    // Open our own file descriptors
+    in  = open(argv[1], O_RDONLY);
+    out = open(argv[1], O_WRONLY);
+    err = open(argv[1], O_WRONLY);
+    //settty(argv[1]);
+
     int filePosTracker = 0;
 
     printf(">>>>>>>>{ BERRNIX grep }<<<<<<<<\n");
@@ -42,12 +57,17 @@ int main(int argc, char *argv[])
         {
             j = 0;
             gets(tempStr);
+            //read(0, tempStr, 1024);
 
             if (strcmp(argv[1], tempStr) == 0) //Simple case, is exactly the same pattern
             {
                 printf("%s\n", tempStr);
             } else {
                 grep(grepStr, tempStr, fd); //fd=1 is stdout
+            }
+            if (tempStr == EOF)
+            {
+                exit(100);
             }
         }
     }

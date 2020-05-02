@@ -29,24 +29,20 @@ int main(int argc, char *argv[])
         }
 
         //printf("[ %04d/%02d/%02d ] BERR Shell [ %s ]\n|-$ ", tm.tm_year + 1900, tm.tm_mon, tm.tm_mday, cwd);
-        printf("BERR Shell [ %s ]-$ ", cwd);
+        printf("BERR Shell #%d [ %s ]-$ ", getpid(), cwd);
         gets(buff);
         
         // Check and get rid of '\n'
         if (buff[strlen(buff) - 1] == '\n')
             buff[strlen(buff) - 1] = 0; // *Get rid of '\n'
-        //buff[strlen(buff)] = 0; // *Get rid of '\n'
+
+        // Take care of the case where buff is empty so shell does not crash
+        if( (strlen(buff) == 0) || (strcmp(buff, "") == 0) || (buff[0] == " "))
+        {
+            buff[0] = " ";
+        }
         strcpy(parseBuff, buff);
         printf("COMMAND = [%s]\n", parseBuff);
-
-        //TODO: LAST Take care of the case where buff 0 == "" an empty string
-        /* if( (strlen(buff) == 0) || (strcmp(buff, "") == 0) || (buff[0] == " "))
-        {
-            continue;
-        } else {
-
-            //Everything else in main goes here
-        } */
 
         while (buff[i] != '\0')
         {
@@ -104,8 +100,11 @@ int main(int argc, char *argv[])
                 int local_status = 0;
                 local_pid = wait(&local_status);
                 printf("local_pid %d terminated with exit(%d)\n", local_pid, local_status);
+                memset(buff, '\0', 256);
+                //buff[0] = " ";
             } else {
                 pipeCheck(buff);
+                exit(100);
             }
         }
     }
@@ -144,9 +143,9 @@ int executeCommand(char buff[])
             {
                 stdoutAppen = i;
                 //!Clear buff of the redirect
-                buff[i] = 0;
-                buff[i + 1] = 0;
-                buff[i + 2] = 0;
+                buff[i] = 0; //* Gets rid of the first '>'
+                buff[i + 1] = 0; //* Gets rid of the second '>'
+                buff[i + 2] = 0; //* Gets rid of the space after the last
 
                 j = i + 3;
                 int k = 0;
@@ -157,6 +156,7 @@ int executeCommand(char buff[])
                     redirectName[k++] = buff[j];
                     buff[j++] = 0; //!delete the rest of none command chars
                 }
+                redirectName[k] = 0;
             }
         }
         else if (buff[i] == '>') //! > redirection check
@@ -175,6 +175,7 @@ int executeCommand(char buff[])
                     redirectName[k++] = buff[j];
                     buff[j++] = 0; //!delete the rest of none command chars
                 }
+                redirectName[k] = 0;
             }
         }
         else if (buff[i] == '<') //! < redirection check
@@ -193,6 +194,7 @@ int executeCommand(char buff[])
                     redirectName[k++] = buff[j];
                     buff[j++] = 0; //!delete the rest of none command chars
                 }
+                redirectName[k] = 0;
             }
         }
         i++;
@@ -232,6 +234,8 @@ int executeCommand(char buff[])
     int r = -1;
     int status = 0;
 
+    printf("Prior to exec tempPath %s\n", command);  // TODO: NEW CHANGE Sat 4-25
+
     while (1)
     {
         //!=========== IO REDIRECTION ==================================
@@ -239,24 +243,27 @@ int executeCommand(char buff[])
 
         if (stdinFlag > 0) // Split the command after <, >, or >>
         {
+            printf("< Redirection\n") ;
             close(0); //! Close file descriptor 1, stdin
-            open(redirectName, O_RDONLY);
+            fd = open(redirectName, O_RDONLY);
         }
         else if (stdoutFlag > 0) //Split command from i forward
         {
+            printf("> Redirection\n") ;
             close(1); //! Close file descriptor 1, stdout
-            open(redirectName, O_WRONLY | O_CREAT);
+            fd = open(redirectName, O_WRONLY | O_CREAT);
         }
         else if (stdoutAppen > 0) //Split command from i forward
         {
+            printf(">> Redirection\n") ;
             close(1); //! Close file descriptor 1, stdout
-            open(redirectName, O_RDWR | O_APPEND);
+            fd = open(redirectName, O_RDWR | O_APPEND);
         }
         //!=============== END IO REDIRECTION ==========================
 
         //strcat(tempPath, command); //! concat tempPath and command
         //printf("Prior to exec tempPath %s\n", tempPath);
-        printf("Prior to exec tempPath %s\n", command);  // TODO: NEW CHANGE Sat 4-25
+        
         int j = 0;
         int k = 0;
 
@@ -374,67 +381,19 @@ int pipeCheck(char buff[])
             dup(pd[1]);
             close(pd[1]);
             
-            executeCommand(buff);
+            executeCommand(buff); 
+            
             
             int status = 0;
             pid = wait(&status);
 
             printf("\nChild process with %d exit(%d)\n", pid, status);
             
-
-            //for combo #1
-            //dup2(saved_stdout, 0);
-            //close(saved_stdout);
-
-            //!Combo #2 //This one does seem backs wards
-            //close(pd[1]); //Writer close pd[]0
-            //dup2(pd[0], 0);
-            //executeCommand(buff);
-
-            //!Combo #3
-            //close(pd[0]); //Writer close pd[]0
-            //dup2(pd[1], 1);
-            //executeCommand(buff);
-
-            //!Combo #4 Bad Error!
-            //close(pd[0]); //Writer close pd[]0
-            //dup2(pd[1], 1);
-            //pipeCheck(nextBuff);
-
-            //!Combo #5 // seemedbackwards
-            //close(pd[1]); //Writer close pd[]0
-            ////dup2(pd[0], 0);
-            //dup(pd[0]);
-            //pipeCheck(nextBuff);
-
-            //!Combo #6 // seemedbackwards
-            //close(pd[1]); //Writer close pd[]0
-            ////dup2(pd[0], 0);
-            //dup(pd[0]);
-            //executeCommand(buff);
-
-            //!Combo #7 // seemedbackwards
-            //close(pd[1]); //Writer close pd[]0
-            //close(1);
-            ////dup2(pd[0], 0);
-            //dup(pd[0]);
-            //executeCommand(buff);
-
-            //pid = wait(&status);
-            //printf("parent %d exit\n", getpid());
-            //exit(100);
-            //return 0;
-
-            //pid = wait(&status);
         }
         else //pid == 0
         {
             //printf("child %d close pd[1]\n", getpid());
             //printf("\n Inside child pipe, command to be ran is nextBuff=%s\n", nextBuff);
-
-            // for combo #!
-            //int saved_stdin = dup(1);
-            //close(1);pipeCheck(nextBuff);
 
             //! Combo #1
             close(pd[1]);
@@ -443,46 +402,8 @@ int pipeCheck(char buff[])
             close(pd[0]);
             
             pipeCheck(nextBuff);
-
-            // for combo#1
-            //dup2(saved_stdin, 1);
-            //close(saved_stdin);
-
-            //! Combo #2  //This one does seem backs wards
-            //close(pd[0]);
-            //dup2(pd[1], 1);
-            //pipeCheck(nextBuff);
-
-            //! Combo #3 
-            //close(pd[1]);
-            //dup2(pd[0], 0);
-            //pipeCheck(nextBuff);
-
-            //! Combo #4 
-            //close(pd[1]);
-            //dup2(pd[0], 0);
-            //executeCommand(buff);
-
-            //! Combo #5 //Seemed backwards
-            //close(pd[0]);
-            ////dup2(pd[1], 1);
-            //dup(pd[1]);
-            //executeCommand(buff);
-
-            //! Combo #6 //Seemed backwards
-            //close(pd[0]);
-            ////dup2(pd[1], 1);
-            //dup(pd[1]);
-            //pipeCheck(nextBuff);
-
-            //! Combo #7 //Seemed backwards
-            //close(pd[0]);
-            //close(0);
-            ////dup2(pd[1], 1);
-            //dup(pd[1]);
-            //pipeCheck(nextBuff);
             
-            //exit(100);
+            exit(100);
         }
     }
     else
@@ -491,4 +412,5 @@ int pipeCheck(char buff[])
         //! Up to here we are good!
         executeCommand(buff);
     }
+    exec("sh");
 }

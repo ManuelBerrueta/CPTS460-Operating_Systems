@@ -86,6 +86,11 @@ int main(int argc, char *argv[])
             l2u(mybuff, fd, outFile);
             //TODO: HANDLE '\n'
             debug++;
+            if(n < 1024)
+            {
+                break;
+            }
+
         }
         puts("===================================================");
         printf("-=0=[END cat file: '%s' @ fd=%d\n", fileName, fd);
