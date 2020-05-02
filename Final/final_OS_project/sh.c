@@ -127,7 +127,7 @@ int executeCommand(char buff[])
     char *myargv[246] = {0}; //? MAY NEED TO REPLACE this with one passed in?
     char command[16];        //? Command string
 
-    strcpy(tempArg, buff); //TODO: if argcounter ==1 just run tempArg
+    //strcpy(tempArg, buff); //TODO: if argcounter ==1 just run tempArg
 
 
     //! (Count number of spaces, check for redirection and pipes
@@ -136,6 +136,7 @@ int executeCommand(char buff[])
         if (buff[i] == ' ')
         {
             argcounter++;
+            i++;
         }
         else if (buff[i] == '>' && buff[i + 1] == '>') //! >> redirection check
         {
@@ -143,20 +144,24 @@ int executeCommand(char buff[])
             {
                 stdoutAppen = i;
                 //!Clear buff of the redirect
-                buff[i] = 0; //* Gets rid of the first '>'
+                buff[i - 1] = 0; //* Gets rid of space before the first '>'
                 buff[i + 1] = 0; //* Gets rid of the second '>'
                 buff[i + 2] = 0; //* Gets rid of the space after the last
 
                 j = i + 3;
-                int k = 0;
+                k = 0;
+                i = j;
                 
                 //* Do the string copy here & clean buff string
-                while (buff[j] != '\0')
+                while (buff[j] != '\0' && buff[j] != ' ' && buff[j] != '\n')
                 {
                     redirectName[k++] = buff[j];
                     buff[j++] = 0; //!delete the rest of none command chars
                 }
                 redirectName[k] = 0;
+            }
+            else {
+                printf("Error in redirect parsing for: >>\n");
             }
         }
         else if (buff[i] == '>') //! > redirection check
@@ -165,17 +170,21 @@ int executeCommand(char buff[])
             {
                 stdoutFlag = i;
                 //!Clear buff of the redirect
-                buff[i] = 0;     //! Gets rid of '>'
+                buff[i - 1] = 0;     //! Gets rid of space before '>'
                 buff[i + 1] = 0; //!Gets rid of the space ' '
                 j = i + 2;
                 k = 0;
+                i = j;
                 //* Do the string copy here & clean buff string
-                while (buff[j] != '\0')
+                while (buff[j] != '\0' && buff[j] != ' ' && buff[j] != '\n')
                 {
                     redirectName[k++] = buff[j];
                     buff[j++] = 0; //!delete the rest of none command chars
                 }
                 redirectName[k] = 0;
+            }
+            else {
+                printf("Error in redirect parsing for: >\n");
             }
         }
         else if (buff[i] == '<') //! < redirection check
@@ -184,27 +193,37 @@ int executeCommand(char buff[])
             {
                 stdinFlag = i; //! Can use i to know where to split the str
                 //!Clear buff of the redirect
-                buff[i] = 0;     //! Gets rid of '>'
+                buff[i - 1] = 0;     //! Gets rid of space before '<'
                 buff[i + 1] = 0; //!Gets rid of the space ' '
                 j = i + 2;
-                int k = 0;
+                k = 0;
+                i = j;
                 //* Do the string copy here & clean buff string
-                while (buff[j] != '\0')
+                while (buff[j] != '\0' && buff[j] != ' ' && buff[j] != '\n')
                 {
                     redirectName[k++] = buff[j];
                     buff[j++] = 0; //!delete the rest of none command chars
                 }
                 redirectName[k] = 0;
             }
+            else {
+                printf("Error in redirect parsing for: <\n");
+            }
         }
-        i++;
+        else { // non space, non redirect chars
+            i++;
+        }
     }
     i = 0;
 
     if(DEBUG)
+    {
         printf("argcounter %d\n", argcounter);
         printf("buff=%s\n", buff);
         getc();
+    }
+
+    strcpy(tempArg, buff); //TODO: if argcounter ==1 just run tempArg
   
     //! Tokenize command and parameters
     memset(command, 0, sizeof(command));
@@ -235,6 +254,8 @@ int executeCommand(char buff[])
     int status = 0;
 
     printf("Prior to exec tempPath %s\n", command);  // TODO: NEW CHANGE Sat 4-25
+    printf("  inflag %d outflag %d appendflag %d redirect name %s argCounter %d\n", stdinFlag, stdoutFlag, stdoutAppen, redirectName, argcounter);
+    printf("  command = %s,temparg = %s,\n", command, tempArg);
 
     while (1)
     {
@@ -252,6 +273,12 @@ int executeCommand(char buff[])
             printf("> Redirection\n") ;
             close(1); //! Close file descriptor 1, stdout
             fd = open(redirectName, O_WRONLY | O_CREAT);
+            // if (fd == 1) {
+            //     write(2, "yay\n", 4);
+            // }
+            // else {
+            //     write(2, "boo\n", 4);
+            // }
         }
         else if (stdoutAppen > 0) //Split command from i forward
         {
@@ -264,12 +291,12 @@ int executeCommand(char buff[])
         //strcat(tempPath, command); //! concat tempPath and command
         //printf("Prior to exec tempPath %s\n", tempPath);
         
-        int j = 0;
-        int k = 0;
+        j = 0;
+        k = 0;
 
         //! Check for shell file, otherwise try to run command
-        char fileCheckBuff[8];
-        //FILE *fp = fopen(tempPath, "r");
+        /* char fileCheckBuff[8];
+        //FILE *fp = fopen(tempPath, "r");ls
         int fp = open(tempPath, O_RDONLY);
         if (fp != NULL)
         {
@@ -289,7 +316,15 @@ int executeCommand(char buff[])
                     r = exec(command); // TODO: NEW CHANGE Sat 4-25
                 }
             }
+        } */
+        if(argcounter) 
+        {
+            r = exec(tempArg);
+        } else {
+            r = exec(command); // TODO: NEW CHANGE Sat 4-25
         }
+
+
         printf("After exec tempPath %s\n", tempPath);
         memset(tempPath, 0, sizeof(tempPath)); // *RESET command
         strcpy(tempPath, pathNames[++i]);
